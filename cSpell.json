@@ -1,0 +1,30 @@
+{
+    "version": "0.1",
+    "language": "en",
+    "words": [
+        "chmod",
+        "ENTRYPOINT",
+        "payhawk",
+        "pino",
+        "prestart",
+        "quotemark",
+        "Stackdriver",
+        "TELEPRESENCE",
+        "travelperk",
+        "typemoq",
+        "WORKDIR"
+    ],
+    "dictionaries": [
+        "npm",
+        "softwareTerms",
+        "typescript"
+    ],
+    "flagWords": [],
+    "ignorePaths": [
+        "node_modules/**",
+        "coverage/**",
+        "build/**",
+        "package-lock.json",
+        "*.log"
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "compilerOptions": {
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "declaration": true,
+        "forceConsistentCasingInFileNames": true,
+        "lib": [
+            "ES2019"
+        ],
+        "module": "commonjs",
+        "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "pretty": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "ES2019",
+        "experimentalDecorators": true,
+        "outDir": "build",
+        "baseUrl": ".",
+        "paths": {
+            "@controllers": [
+                "src/controllers/index"
+            ],
+            "@utils": [
+                "src/utils/index"
+            ],
+            "*": [
+                "types/*"
+            ]
+        },
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
