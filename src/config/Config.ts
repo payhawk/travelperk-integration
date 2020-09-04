@@ -3,6 +3,7 @@ import * as fs from 'fs';
 export interface IConfig {
     serviceName: string;
     payhawkUrl: string;
+    portalUrl: string;
 }
 
 let serviceConfigPath = process.env.CONFIG_PATH ? `${process.env.CONFIG_PATH}/travelperk-adapter-config.json` : '../../config.json';

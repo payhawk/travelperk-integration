@@ -20,8 +20,20 @@
         "outDir": "build",
         "baseUrl": ".",
         "paths": {
+            "@config": [
+                "src/config/index"
+            ],
             "@controllers": [
                 "src/controllers/index"
+            ],
+            "@managers": [
+                "src/managers/index"
+            ],
+            "@services": [
+                "src/services/index"
+            ],
+            "@store": [
+                "src/store/index"
             ],
             "@utils": [
                 "src/utils/index"

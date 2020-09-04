@@ -4,6 +4,7 @@
     "words": [
         "chmod",
         "ENTRYPOINT",
+        "openid",
         "payhawk",
         "pino",
         "prestart",

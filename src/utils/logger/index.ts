@@ -1,6 +1,7 @@
 import * as pino from 'pino';
 
-import { config } from '../../Config';
+import { config } from '@config';
+
 import { ILogger } from './ILogger';
 import { PinoStackDriverLogger } from './PinoStackDriverLogger';
 
