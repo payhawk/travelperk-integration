@@ -1,10 +1,14 @@
 import { ILogger } from '@utils';
 
 import { ITravelPerkClientConfig } from '../Config';
-import { ITravelPerkHttpClient } from './ITravelPerkHttpClient';
-import { TravelPerkHttpClient } from './TravelPerkHttpClient';
+import { HttpClient } from './HttpClient';
+import { ITravelPerkHttpClient } from './ITravelPerkClient';
+import { TravelPerkHttpClient } from './TravelPerkClient';
 
-export * from './ITravelPerkHttpClient';
+export * from './ITravelPerkClient';
 
 export const createTravelPerkHttpClient: (accessToken: string | undefined, config: ITravelPerkClientConfig, logger: ILogger) => ITravelPerkHttpClient =
-    (accessToken: string | undefined, config: ITravelPerkClientConfig, logger: ILogger) => new TravelPerkHttpClient(accessToken, config, logger);
+    (accessToken: string | undefined, config: ITravelPerkClientConfig, logger: ILogger) => new TravelPerkHttpClient(
+        new HttpClient(accessToken, logger),
+        config,
+    );

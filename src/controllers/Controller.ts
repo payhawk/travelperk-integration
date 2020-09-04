@@ -1,5 +1,6 @@
 import { URL, URLSearchParams } from 'url';
 
+import { boundMethod } from 'autobind-decorator';
 import { Next, Request, Response } from 'restify';
 
 import { IConfig } from '@config';
@@ -13,6 +14,7 @@ export class Controller {
         private readonly baseLogger: ILogger,
     ) { }
 
+    @boundMethod
     @requiredQueryParams('accountId')
     async connect(req: Request, res: Response, next: Next) {
         const { accountId, returnUrl: queryReturnUrl } = req.query;
@@ -24,11 +26,13 @@ export class Controller {
 
         const connectionManager = this.connectionManagerFactory({ accountId, returnUrl }, logger);
         const authorizationUrl = await connectionManager.getAuthorizationUrl();
+
         res.redirect(authorizationUrl, next);
 
         logger.info('Connect completed');
     }
 
+    @boundMethod
     @requiredQueryParams('state')
     async callback(req: Request, res: Response, next: Next) {
         const { code, error, state: encodedState } = req.query;
@@ -63,7 +67,7 @@ export class Controller {
         }
 
         const connectionManager = this.connectionManagerFactory({ accountId }, logger);
-        const accessToken = await connectionManager.authenticate(req.url!);
+        const accessToken = await connectionManager.authenticate(code);
         if (!accessToken) {
             logger.error(Error('Could not create access token from callback'));
             res.send(401);
@@ -76,5 +80,29 @@ export class Controller {
         res.redirect(url.toString(), next);
 
         logger.info('Callback complete');
+    }
+
+    @boundMethod
+    async payhawk(req: Request, res: Response) {
+        const { accountId } = req.body;
+        if (!accountId) {
+            this.baseLogger.error(Error('Account ID is required'));
+        }
+
+        const logger = this.baseLogger.child({ accountId });
+
+        logger.info('Event received');
+
+        try {
+            const connectionManager = this.connectionManagerFactory({ accountId }, logger);
+            await connectionManager.getAccessToken();
+        } catch (err) {
+            logger.error(err);
+            res.send(500);
+        }
+
+        res.send(204);
+
+        logger.info('Event processed');
     }
 }

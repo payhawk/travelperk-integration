@@ -1,18 +1,19 @@
 import { ITokenSet } from '@store';
 import { ILogger } from '@utils';
 
-import { Auth, IAccessToken, IAuth } from './auth';
+import { Auth, IAuth } from './auth';
 import {
     Client,
     IClient,
 } from './client';
 import { getTravelPerkConfig } from './Config';
-import { createTravelPerkHttpClient } from './http';
+import { createTravelPerkHttpClient, IAccessToken } from './http';
 
 export {
     IAuth,
-    IAccessToken,
+    ITokenSet,
     IClient,
+    IAccessToken,
 };
 
 export const createAuth = ({ accountId, returnUrl }: IAuthParams, logger: ILogger): IAuth => {

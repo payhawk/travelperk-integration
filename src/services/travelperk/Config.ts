@@ -6,7 +6,7 @@ export interface ITravelPerkClientConfig {
     clientId: string;
     clientSecret: string;
     redirectUri: string;
-    scope: string;
+    scopes: string[];
     state: string;
 }
 
@@ -26,7 +26,7 @@ export const getTravelPerkConfig = (accountId: string, returnUrl?: string): ITra
 };
 
 function getTravelPerkConfigPath(): string {
-    let result = process.env.XERO_CONFIG_PATH ? `${process.env.XERO_CONFIG_PATH}/travelperk-config.json` : '../../../travelperk-config.json';
+    let result = process.env.TRAVELPERK_CONFIG_PATH ? `${process.env.TRAVELPERK_CONFIG_PATH}/travelperk-config.json` : '../../../travelperk-config.json';
     if (process.env.TELEPRESENCE_MOUNT_PATH) {
         result = process.env.TELEPRESENCE_MOUNT_PATH + result;
     }

@@ -1,5 +1,3 @@
-import { TokenSet } from 'openid-client';
-
 import { KeyNameMap } from '@utils';
 
 export interface INewUserTokenSetRecord {
@@ -7,7 +5,14 @@ export interface INewUserTokenSetRecord {
     token_set: ITokenSet;
 }
 
-export type ITokenSet = TokenSet;
+export interface ITokenSet {
+    access_token: string;
+    refresh_token: string;
+    expires_at?: number;
+    expires_in?: number;
+    scope: string;
+    token_type: 'Bearer';
+}
 
 export interface IUserTokenSetRecord extends INewUserTokenSetRecord {
     created_at: Date;

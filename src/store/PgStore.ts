@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 
-import { TokenSet } from 'openid-client';
 import { Pool } from 'pg';
 
 import { ILogger } from '@utils';
@@ -46,10 +45,6 @@ export class PgStore implements IStore {
         });
 
         const record = query.rows[0];
-        if (record) {
-            record.token_set = new TokenSet(record.token_set);
-        }
-
         return record;
     }
 

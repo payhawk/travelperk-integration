@@ -1,7 +1,8 @@
 import { TravelPerk } from '@services';
-import { IStore, ITokenSet } from '@store';
+import { IStore } from '@store';
 import { ILogger } from '@utils';
 
+import { toAccessToken } from '../../services/travelperk/http/TravelPerkClient';
 import { IManager } from './IManager';
 
 export class Manager implements IManager {
@@ -18,21 +19,21 @@ export class Manager implements IManager {
         return url;
     }
 
-    async authenticate(verifier: string): Promise<ITokenSet | undefined> {
-        const accessToken = await this.authClient.getAccessToken(verifier);
+    async authenticate(code: string): Promise<TravelPerk.IAccessToken> {
+        const accessToken = await this.authClient.getAccessToken(code);
 
         await this.saveAccessToken(accessToken);
 
-        return accessToken.tokenSet;
+        return accessToken;
     }
 
-    async getAccessToken(): Promise<ITokenSet | undefined> {
+    async getAccessToken(): Promise<TravelPerk.IAccessToken | undefined> {
         const accessTokenRecord = await this.store.getAccessToken(this.accountId);
         if (accessTokenRecord === undefined) {
             return undefined;
         }
 
-        let accessToken: ITokenSet | undefined = accessTokenRecord.token_set;
+        let accessToken: TravelPerk.IAccessToken | undefined = toAccessToken(accessTokenRecord.token_set);
 
         const isExpired = accessToken.expired();
         if (isExpired) {
@@ -42,7 +43,7 @@ export class Manager implements IManager {
         return accessToken;
     }
 
-    private async tryRefreshAccessToken(currentToken: ITokenSet): Promise<ITokenSet | undefined> {
+    private async tryRefreshAccessToken(currentToken: TravelPerk.IAccessToken): Promise<TravelPerk.IAccessToken | undefined> {
         try {
             if (!currentToken.refresh_token) {
                 this.logger.info('Current token is expired and cannot be refreshed. Must re-authenticate.');
@@ -56,7 +57,7 @@ export class Manager implements IManager {
             }
 
             await this.saveAccessToken(refreshedAccessToken);
-            return refreshedAccessToken.tokenSet;
+            return refreshedAccessToken;
         } catch (err) {
             const error = Error(`Failed to refresh access token - ${err.toString()}`);
             this.logger.error(error);
@@ -68,7 +69,7 @@ export class Manager implements IManager {
     private async saveAccessToken(accessToken: TravelPerk.IAccessToken) {
         await this.store.saveAccessToken({
             account_id: this.accountId,
-            token_set: accessToken.tokenSet,
+            token_set: accessToken,
         });
     }
 }

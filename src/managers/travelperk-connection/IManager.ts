@@ -1,7 +1,7 @@
-import { ITokenSet } from '../../store';
+import { TravelPerk } from '@services';
 
 export interface IManager {
     getAuthorizationUrl(): Promise<string>;
-    authenticate(verifier: string): Promise<ITokenSet | undefined>;
-    getAccessToken(): Promise<ITokenSet | undefined>;
+    authenticate(verifier: string): Promise<TravelPerk.IAccessToken>;
+    getAccessToken(): Promise<TravelPerk.IAccessToken | undefined>;
 }

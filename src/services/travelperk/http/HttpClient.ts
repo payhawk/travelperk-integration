@@ -3,17 +3,16 @@ import { ForbiddenError } from 'restify-errors';
 
 import { ILogger } from '@utils';
 
-import { ITravelPerkClientConfig } from '../Config';
-import { IRequestOptions, ITravelPerkHttpClient } from './ITravelPerkHttpClient';
+import { IHttpClient, IRequestOptions } from './IHttpClient';
 
-export class TravelPerkHttpClient implements ITravelPerkHttpClient {
+export class HttpClient implements IHttpClient {
     private readonly client: AxiosInstance;
+
     constructor(
         private readonly accessToken: string | undefined,
-        private readonly config: ITravelPerkClientConfig,
         private readonly logger: ILogger,
     ) {
-        this.client = Axios.create({ baseURL: BASE_PATH });
+        this.client = Axios.create();
         this.client.interceptors.request.use(async (reqConfig: AxiosRequestConfig) => {
             if (this.accessToken) {
                 reqConfig.headers[AUTHORIZATION_HEADER] = `Bearer ${this.accessToken}`;
@@ -24,58 +23,29 @@ export class TravelPerkHttpClient implements ITravelPerkHttpClient {
         });
     }
 
-    buildConsentUrl(): string {
-        return buildUrl(
-            '/oauth/authorize',
-            {
-                client_id: this.config.clientId,
-                redirect_uri: this.config.redirectUri,
-                scope: this.config.scope,
-                response_type: 'code',
-                state: this.config.state,
-            }
-        );
+    async request<TBody = any>(requestOptions: IRequestOptions): Promise<TBody> {
+        return this.makeRequest<TBody>(requestOptions);
     }
+    private async makeRequest<TBody extends any>({ method, url, data, contentType }: IRequestOptions): Promise<TBody> {
+        return this._makeSafeRequest<TBody>(
+            async () => {
+                const headers: Record<string, string> = {};
+                if (contentType) {
+                    headers[CONTENT_TYPE_HEADER] = contentType;
+                }
 
-    async getAccessToken(code: string): Promise<any> {
-        const requestUrl = buildUrl(
-            '/accounts/oauth/token',
-            {
-                grant_type: 'authorization_code',
-                code,
-                redirect_uri: this.config.redirectUri,
-                client_id: this.config.clientId,
-                client_secret: this.config.clientSecret,
+                const response = await this.client.request<TBody>({
+                    url,
+                    method,
+                    data,
+                    headers,
+                });
+
+                return response.data;
             }
+            ,
+            0,
         );
-
-        const result = this.makeRequest({
-            method: 'POST',
-            fullPath: requestUrl,
-        });
-
-        return result;
-    }
-
-    async refreshAccessToken(): Promise<any> {
-        const requestUrl = buildUrl(
-            '/accounts/oauth/token',
-            {
-                grant_type: 'refresh_token',
-                refresh_token: '',
-            }
-        );
-
-        const result = this.makeRequest({
-            method: 'POST',
-            fullPath: requestUrl,
-        });
-
-        return result;
-    }
-
-    async makeRequest<TResult extends any>(requestOptions: IRequestOptions): Promise<TResult> {
-        return this._makeSafeRequest<TResult>(() => this._makeRequestInner(requestOptions), 0);
     }
 
     private async _makeSafeRequest<TResult extends any>(action: () => Promise<any>, retryCount: number): Promise<TResult> {
@@ -137,33 +107,14 @@ export class TravelPerkHttpClient implements ITravelPerkHttpClient {
 
         throw createError(action, err);
     }
-
-    private async _makeRequestInner<TResult>({ method, fullPath, path, data }: IRequestOptions): Promise<TResult> {
-        if (!fullPath && !path) {
-            throw Error('Must provide either path or fullPath for making a request');
-        }
-
-        const response = await this.client.request<TResult>({
-            url: fullPath || `${BASE_PATH}/${path}`,
-            method,
-            data,
-        });
-
-        return response.data;
-    }
-}
-
-function buildUrl(path: string, query: Record<string, string>): string {
-    const queryString = Object.keys(query).map(x => `${x}=${encodeURIComponent(query[x])}`);
-    return `${BASE_PATH}${path}?${queryString}`;
 }
 
 function createError(action: any, err: any, errorConstructor: (m?: string) => Error = Error): Error {
     return errorConstructor(JSON.stringify({ action: action.toString(), error: err }, undefined, 2));
 }
 
-const BASE_PATH = 'https://app.travelperk.com/';
 const AUTHORIZATION_HEADER = 'Authorization';
+const CONTENT_TYPE_HEADER = 'Content-Type';
 const API_VERSION_HEADER = 'Api-Version';
 const API_VERSION = '1';
 

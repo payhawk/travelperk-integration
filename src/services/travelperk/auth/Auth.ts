@@ -1,8 +1,7 @@
-import { ITokenSet } from '@store';
 import { ILogger } from '@utils';
 
-import { ITravelPerkHttpClient } from '../http';
-import { IAccessToken, IAuth } from './IAuth';
+import { IAccessToken, ITravelPerkHttpClient } from '../http';
+import { IAuth } from './IAuth';
 
 export class Auth implements IAuth {
 
@@ -17,11 +16,11 @@ export class Auth implements IAuth {
         return this.client.buildConsentUrl();
     }
 
-    async getAccessToken(verifier: string): Promise<IAccessToken> {
-        return this.client.getAccessToken(verifier);
+    async getAccessToken(code: string): Promise<IAccessToken> {
+        return this.client.getAccessToken(code);
     }
 
-    async refreshAccessToken(currentToken?: ITokenSet): Promise<IAccessToken | undefined> {
-        return this.client.refreshAccessToken();
+    async refreshAccessToken(currentToken: IAccessToken): Promise<IAccessToken> {
+        return this.client.refreshAccessToken(currentToken);
     }
 }

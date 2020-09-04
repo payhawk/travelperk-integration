@@ -9,6 +9,7 @@ require('module-alias').addAliases({
 });
 
 import { create as createController } from '@controllers';
+import * as Store from '@store';
 
 import { createServer } from './Server';
 
@@ -16,6 +17,8 @@ import { createServer } from './Server';
 require('source-map-support').install();
 
 (async () => {
+    await Store.initialize();
+
     const controller = createController();
     const server = createServer(controller);
 
