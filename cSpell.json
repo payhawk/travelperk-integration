@@ -2,8 +2,10 @@
     "version": "0.1",
     "language": "en",
     "words": [
+        "autobind",
         "chmod",
         "ENTRYPOINT",
+        "jsonb",
         "openid",
         "payhawk",
         "pino",
