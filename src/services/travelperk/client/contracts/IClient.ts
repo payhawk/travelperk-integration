@@ -27,6 +27,12 @@ export interface IClient {
      * Retrieves all invoices
      */
     getInvoices(filter?: IInvoicesFilter): Promise<IInvoice[]>;
+
+    /**
+     * Gets invoice document
+     * @param serialNumber Invoice serial number
+     */
+    getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer>;
 }
 
 export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {

@@ -26,7 +26,7 @@ export class HttpClient implements IHttpClient {
     async request<TBody = any>(requestOptions: IRequestOptions): Promise<TBody> {
         return this.makeRequest<TBody>(requestOptions);
     }
-    private async makeRequest<TBody extends any>({ method, url, data, contentType }: IRequestOptions): Promise<TBody> {
+    private async makeRequest<TBody extends any>({ method, url, data, contentType, responseType }: IRequestOptions): Promise<TBody> {
         return this._makeSafeRequest<TBody>(
             async () => {
                 const headers: Record<string, string> = {};
@@ -39,6 +39,7 @@ export class HttpClient implements IHttpClient {
                     method,
                     data,
                     headers,
+                    responseType,
                 });
 
                 return response.data;

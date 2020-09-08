@@ -38,6 +38,10 @@ export class Manager implements IManager {
 
         return invoicesForTodayNotYetSynced;
     }
+
+    async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
+        return this.client.getInvoiceDocument(serialNumber);
+    }
 }
 
 function mapToInvoice({ serial_number, status, profile_id, profile_name, currency, total, due_date, issuing_date }: TravelPerk.IInvoice): IInvoice {

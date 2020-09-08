@@ -73,6 +73,12 @@ export class Client implements IClient {
 
         return result.invoices;
     }
+
+    async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
+        const url = buildApiUrl(`/invoices/${encodeURIComponent(serialNumber)}/pdf`);
+        const result = await this.client.request({ url, method: 'GET', responseType: 'arraybuffer' });
+        return result;
+    }
 }
 
 function buildAuthUrl(path: string, query?: IQuery): string {

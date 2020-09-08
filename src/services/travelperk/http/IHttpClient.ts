@@ -7,4 +7,5 @@ export interface IRequestOptions {
     url?: string;
     data?: any;
     contentType?: string;
+    responseType?: 'json' | 'arraybuffer';
 }
