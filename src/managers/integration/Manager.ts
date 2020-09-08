@@ -14,7 +14,7 @@ export class Manager implements IManager {
     ){}
 
     async syncInvoices(): Promise<void> {
-        const invoices = await this.travelperkEntities.getInvoices();
+        const invoices = await this.travelperkEntities.getPaidInvoicesSinceLastSync();
         if (invoices) {
             return;
         }

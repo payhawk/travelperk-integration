@@ -1,5 +1,5 @@
 import { IInvoice } from './IInvoice';
 
 export interface IManager {
-    getInvoices(): Promise<IInvoice[]>;
+    getPaidInvoicesSinceLastSync(): Promise<IInvoice[]>;
 }

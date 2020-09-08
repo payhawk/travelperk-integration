@@ -7,7 +7,6 @@ export interface IInvoice {
     dueDate: string;
     currency: Currency;
     total: string;
-    pdf: string;
 }
 
 export enum Currency {

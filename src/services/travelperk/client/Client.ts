@@ -4,7 +4,7 @@ import { ITokenSet } from '@store';
 
 import { ITravelPerkClientConfig } from '../Config';
 import { IHttpClient } from '../http';
-import { IAccessToken, IClient, IInvoice, IInvoicesResponse } from './contracts';
+import { IAccessToken, IClient, IInvoice, IInvoicesFilter, IInvoicesResponse } from './contracts';
 
 export class Client implements IClient {
     constructor(
@@ -67,35 +67,40 @@ export class Client implements IClient {
         return toAccessToken(result);
     }
 
-    async getInvoices(): Promise<IInvoice[]> {
-        const url = buildApiUrl('/invoices');
+    async getInvoices(filter?: IInvoicesFilter): Promise<IInvoice[]> {
+        const url = buildApiUrl('/invoices', filter);
         const result = await this.client.request<IInvoicesResponse>({ url, method: 'GET' });
 
         return result.invoices;
     }
 }
 
-function buildAuthUrl(path: string, query?: Record<string, string>): string {
+function buildAuthUrl(path: string, query?: IQuery): string {
     return buildUrl(AUTH_BASE_PATH, path, query);
 }
 
-function buildApiUrl(path: string, query?: Record<string, string>): string {
+function buildApiUrl(path: string, query?: IQuery): string {
     return buildUrl(API_BASE_PATH, path, query);
 }
 
-function buildUrl(basePath: string, path: string, query?: Record<string, string>): string {
+function buildUrl(basePath: string, path: string, query?: IQuery): string {
     const queryString = toUrlParams(query);
     return `${basePath}${path}?${queryString}`;
 }
 
-function toUrlParams(query?: Record<string, string>): string {
-    const queryString = query ? Object.keys(query).map(x => `${x}=${encodeURIComponent(query[x])}`).join('&') : '';
+function toUrlParams(query?: IQuery): string {
+    const queryString = query ? Object.keys(query)
+        .filter(x => query[x] !== undefined)
+        .map(x => `${x}=${encodeURIComponent(query[x].toString())}`).join('&') :
+        '';
     return queryString;
 }
 
 export const toAccessToken = (tokenSet: ITokenSet): IAccessToken => {
     return new TokenSet({ ...tokenSet }) as IAccessToken;
 };
+
+type IQuery = { [key: string]: any };
 
 const AUTH_BASE_PATH = 'https://app.travelperk.com';
 const API_BASE_PATH = 'https://api.travelperk.com';

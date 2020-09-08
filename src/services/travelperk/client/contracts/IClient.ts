@@ -26,7 +26,24 @@ export interface IClient {
     /**
      * Retrieves all invoices
      */
-    getInvoices(): Promise<IInvoice[]>;
+    getInvoices(filter?: IInvoicesFilter): Promise<IInvoice[]>;
+}
+
+export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {
+    /**
+     * Page size - between 10 and 50 inclusive
+     */
+    limit?: number;
+
+    /**
+     * Format is YYYY-MM-DD
+     */
+    issuing_date_gte?: string;
+
+    /**
+     * Format is YYYY-MM-DD
+     */
+    issuing_date_lte?: string;
 }
 
 export interface IAccessToken extends Required<ITokenSet> {

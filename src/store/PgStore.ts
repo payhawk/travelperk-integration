@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 
+import * as moment from 'moment';
 import { Pool } from 'pg';
 
 import { ILogger } from '@utils';
 
 import { SCHEMA } from './Config';
-import { INewUserTokenSetRecord, ISchemaStore, IUserTokenSetRecord, PayhawkApiKeyRecordKeys, UserTokenSetRecordKeys } from './contracts';
+import { IInvoicesSyncHistoryItemRecord, INewUserTokenSetRecord, ISchemaStore, IUserTokenSetRecord, PayhawkApiKeyRecordKeys, SyncHistoryItemRecordKeys, UserTokenSetRecordKeys } from './contracts';
 
 export class PgStore implements ISchemaStore {
 
@@ -82,6 +83,36 @@ export class PgStore implements ISchemaStore {
                     UPDATE SET "${PayhawkApiKeyRecordKeys.key}" = $2, "${PayhawkApiKeyRecordKeys.updated_at}" = NOW()
             `,
             values: [accountId, key],
+        });
+    }
+
+    async getLastSyncDate(accountId: string): Promise<Date | undefined> {
+        const query = await this.pgClient.query<Pick<IInvoicesSyncHistoryItemRecord, 'last_sync_at'>>({
+            text: `
+                SELECT "${SyncHistoryItemRecordKeys.last_sync_at}" FROM "${SCHEMA.TABLE_NAMES.INVOICES_SYNC_HISTORY}"
+                WHERE "${PayhawkApiKeyRecordKeys.account_id}" = $1
+            `,
+            values: [accountId],
+        });
+
+        if (query.rows.length > 0) {
+            return moment.utc(query.rows[0].last_sync_at).toDate();
+        }
+
+        return undefined;
+    }
+
+    async updateLastSyncDate(accountId: string, lastSyncAt: Date): Promise<void> {
+        await this.pgClient.query({
+            text: `
+                INSERT INTO "${SCHEMA.TABLE_NAMES.INVOICES_SYNC_HISTORY}"
+                    ("${SyncHistoryItemRecordKeys.account_id}", "${SyncHistoryItemRecordKeys.last_sync_at}")
+                VALUES ($1, $2)
+                ON CONFLICT ("${SyncHistoryItemRecordKeys.account_id}")
+                DO
+                    UPDATE SET "${SyncHistoryItemRecordKeys.last_sync_at}" = $2
+            `,
+            values: [accountId, lastSyncAt],
         });
     }
 
