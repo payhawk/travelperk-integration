@@ -7,7 +7,9 @@ import { IConfig } from '@config';
 import { Connection } from '@managers';
 import { fromBase64, ILogger, requiredQueryParams } from '@utils';
 
-export class Controller {
+import { IConnectionStatus } from './contracts';
+
+export class AuthController {
     constructor(
         private readonly connectionManagerFactory: Connection.IManagerFactory,
         private readonly config: IConfig,
@@ -75,7 +77,6 @@ export class Controller {
         }
 
         url.searchParams.append('connection', 'travelperk');
-        url.searchParams.append('label', 'TravelPerk Test');
 
         res.redirect(url.toString(), next);
 
@@ -83,26 +84,19 @@ export class Controller {
     }
 
     @boundMethod
-    async payhawk(req: Request, res: Response) {
-        const { accountId } = req.body;
-        if (!accountId) {
-            this.baseLogger.error(Error('Account ID is required'));
-        }
+    @requiredQueryParams('accountId')
+    async getConnectionStatus(req: Request, res: Response) {
+        const { accountId } = req.query;
 
-        const logger = this.baseLogger.child({ accountId });
+        const logger = this.baseLogger.child({ accountId }, req);
 
-        logger.info('Event received');
+        const connectionManager = this.connectionManagerFactory({ accountId }, logger);
+        const accessToken = await connectionManager.getAccessToken();
 
-        try {
-            const connectionManager = this.connectionManagerFactory({ accountId }, logger);
-            await connectionManager.getAccessToken();
-        } catch (err) {
-            logger.error(err);
-            res.send(500);
-        }
+        const connectionStatus: IConnectionStatus = {
+            isAlive: accessToken !== undefined && !accessToken.expired(),
+        };
 
-        res.send(204);
-
-        logger.info('Event processed');
+        res.send(200, connectionStatus);
     }
 }

@@ -1,12 +1,12 @@
 import { ILogger } from '@utils';
 
-import { IAccessToken, ITravelPerkHttpClient } from '../http';
+import { IAccessToken, IClient } from '../client';
 import { IAuth } from './IAuth';
 
 export class Auth implements IAuth {
 
     constructor(
-        private readonly client: ITravelPerkHttpClient,
+        private readonly client: IClient,
         // @ts-ignore
         private readonly logger: ILogger,
         ) {

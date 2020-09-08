@@ -19,7 +19,7 @@ FROM node:12-alpine
 
 WORKDIR /app
 
-EXPOSE 8080
+EXPOSE 8080 8050
 
 ENTRYPOINT [ "node", "build/index" ]
 

@@ -3,25 +3,25 @@ import { ILogger } from '@utils';
 
 import { Auth, IAuth } from './auth';
 import {
-    Client,
+    createClient,
+    IAccessToken,
     IClient,
+    IInvoice,
 } from './client';
 import { getTravelPerkConfig } from './Config';
-import { createTravelPerkHttpClient, IAccessToken } from './http';
 
 export {
     IAuth,
     ITokenSet,
     IClient,
     IAccessToken,
+    IInvoice,
+    createClient,
+    getTravelPerkConfig,
 };
 
 export const createAuth = ({ accountId, returnUrl }: IAuthParams, logger: ILogger): IAuth => {
-    return new Auth(createTravelPerkHttpClient(undefined, getTravelPerkConfig(accountId, returnUrl), logger), logger);
-};
-
-export const createClient = (accessToken: ITokenSet, logger: ILogger): IClient => {
-    return new Client({} as any, logger);
+    return new Auth(createClient(undefined, getTravelPerkConfig(accountId, returnUrl), logger), logger);
 };
 
 export interface IAuthParams {

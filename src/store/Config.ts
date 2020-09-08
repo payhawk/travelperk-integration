@@ -4,5 +4,6 @@ export namespace SCHEMA {
 
     export enum TABLE_NAMES {
         ACCESS_TOKENS = 'access_tokens',
+        PAYHAWK_API_KEYS = 'payhawk_api_keys',
     }
 }

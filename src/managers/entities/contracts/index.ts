@@ -1,2 +1,2 @@
-export * from './IClient';
 export * from './IInvoice';
+export * from './IManager';

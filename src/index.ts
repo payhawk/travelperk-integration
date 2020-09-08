@@ -8,10 +8,11 @@ require('module-alias').addAliases({
     '@utils': `${__dirname}/utils`,
 });
 
-import { create as createController } from '@controllers';
+import { createAuthController, createIntegrationController } from '@controllers';
 import * as Store from '@store';
+import { createLogger } from '@utils';
 
-import { createServer } from './Server';
+import { createServer, createWorker } from './Server';
 
 // tslint:disable-next-line:no-var-requires
 require('source-map-support').install();
@@ -19,13 +20,19 @@ require('source-map-support').install();
 (async () => {
     await Store.initialize();
 
-    const controller = createController();
-    const server = createServer(controller);
+    const logger = createLogger();
+    const authController = createAuthController(logger);
+    const integrationController = createIntegrationController(logger);
 
-    const stop = async () => await server.close();
+    const server = createServer(authController, integrationController);
+    const worker = createWorker(integrationController);
+
+    const stop = async () => await Promise.all([server.close(), worker.close()]);
+
     process.on('SIGTERM', stop);
     process.on('SIGINT', stop);
     process.on('warning', warning => console.error(warning));
 
     server.listen(8080, () => console.log('%s listening at %s', server.name, server.url));
+    worker.listen(8050, () => console.log('%s listening at %s', worker.name, worker.url));
 })().catch(err => console.error(err));

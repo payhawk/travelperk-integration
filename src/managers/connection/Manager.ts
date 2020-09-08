@@ -2,7 +2,7 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger } from '@utils';
 
-import { toAccessToken } from '../../services/travelperk/http/TravelPerkClient';
+import { toAccessToken } from '../../services/travelperk/client/Client';
 import { IManager } from './IManager';
 
 export class Manager implements IManager {
@@ -41,6 +41,19 @@ export class Manager implements IManager {
         }
 
         return accessToken;
+    }
+
+    async getPayhawkApiKey(): Promise<string> {
+        const result = await this.store.getApiKey(this.accountId);
+        if (!result) {
+            throw Error('No API key for account');
+        }
+
+        return result;
+    }
+
+    async setPayhawkApiKey(key: string): Promise<void> {
+        await this.store.setApiKey(this.accountId, key);
     }
 
     private async tryRefreshAccessToken(currentToken: TravelPerk.IAccessToken): Promise<TravelPerk.IAccessToken | undefined> {

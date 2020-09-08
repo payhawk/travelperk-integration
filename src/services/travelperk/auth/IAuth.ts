@@ -1,4 +1,4 @@
-import { IAccessToken } from '../http';
+import { IAccessToken } from '../client';
 
 export interface IAuth {
     getAuthUrl(): Promise<string>;

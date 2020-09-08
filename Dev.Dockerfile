@@ -5,7 +5,7 @@ RUN chmod -R 777 /app
 
 USER node
 
-EXPOSE 8080 9230
+EXPOSE 8080 8050 9230
 ENTRYPOINT [ "npm", "start" ]
 
 COPY ["./package.json", "./package-lock.json", "./"]

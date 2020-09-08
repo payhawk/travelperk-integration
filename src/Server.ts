@@ -1,11 +1,10 @@
 import * as restify from 'restify';
 
 import { config } from '@config';
+import { AuthController, IntegrationController } from '@controllers';
 import { requestHandler } from '@utils';
 
-import { Controller } from './controllers';
-
-export const createServer = (controller: Controller): restify.Server => {
+export const createServer = (authController: AuthController, integrationController: IntegrationController): restify.Server => {
     const server = restify.createServer({ name: config.serviceName });
 
     server
@@ -16,10 +15,24 @@ export const createServer = (controller: Controller): restify.Server => {
     // Endpoint used to check whether the service is up and running
     server.get('/status', (req, res) => res.send(200, 'OK'));
 
-    server.get('/connect', requestHandler(controller.connect));
-    server.get('/callback', requestHandler(controller.callback));
+    server.get('/connect', requestHandler(authController.connect));
+    server.get('/callback', requestHandler(authController.callback));
 
-    // server.post('/payhawk', requestHandler(controller.payhawk));
+    server.post('/payhawk', requestHandler(integrationController.payhawk));
+    server.get('/payhawk/connection-status', requestHandler(authController.getConnectionStatus));
+
+    return server;
+};
+
+export const createWorker = (controller: IntegrationController): restify.Server => {
+    const server = restify.createServer({ name: `${config.serviceName} Worker` });
+
+    server
+        .use(restify.plugins.jsonBodyParser())
+        .use(restify.plugins.queryParser())
+        .use(securityHeadersMiddleware());
+
+    server.post('/travelperk-invoices-sync', requestHandler(controller.syncInvoices));
 
     return server;
 };
