@@ -34,8 +34,8 @@ export class Client implements IClient {
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Total-Amount`]: totalAmount,
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Tax-Amount`]: taxAmount,
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Currency`]: currency,
-                    [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Document-Date`]: documentDate,
-                    [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Document-Number`]: documentNumber,
+                    [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Date`]: documentDate,
+                    [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Number`]: documentNumber,
                     ...formData.getHeaders(),
                 },
             }
