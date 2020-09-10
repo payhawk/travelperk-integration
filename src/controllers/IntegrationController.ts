@@ -2,9 +2,9 @@ import { boundMethod } from 'autobind-decorator';
 import { Request, Response } from 'restify';
 
 import { Accounts, Connection, Integration } from '@managers';
-import { ILogger, payhawkSigned } from '@utils';
+import { ILogger, payhawkSigned, requiredBodyParams } from '@utils';
 
-import { IPayhawkPayload, PayhawkEvent } from './contracts';
+import { IPayhawkPayload, ISyncInvoicesPayload, PayhawkEvent } from './contracts';
 
 export class IntegrationController {
     constructor(
@@ -15,16 +15,20 @@ export class IntegrationController {
     ) { }
 
     @boundMethod
+    @requiredBodyParams<ISyncInvoicesPayload>('fromBeforeMinutes')
     async syncInvoices(req: Request, res: Response) {
-        this.baseLogger.info('Invoices sync received');
+        const { fromBeforeMinutes } = req.body as ISyncInvoicesPayload;
 
-        const accountsManager = this.accountsManagerFactory(this.baseLogger);
+        let logger = this.baseLogger.child({ fromBeforeMinutes });
+        logger.info('Invoices sync received');
+
+        const accountsManager = this.accountsManagerFactory(logger);
         const connectedAccountIds = await accountsManager.getConnectedAccountIds();
         if (connectedAccountIds.length === 0) {
-            this.baseLogger.info('No connected accounts found');
+            logger.info('No connected accounts found');
         } else {
             for (const accountId of connectedAccountIds) {
-                const logger = this.baseLogger.child({ accountId });
+                logger = logger.child({ accountId });
 
                 logger.info('Processing started');
 
@@ -46,7 +50,7 @@ export class IntegrationController {
                     logger,
                 );
 
-                await integrationManager.syncInvoices();
+                await integrationManager.syncInvoices(fromBeforeMinutes);
 
                 logger.info('Processing completed');
             }
@@ -54,7 +58,7 @@ export class IntegrationController {
 
         res.send(204);
 
-        this.baseLogger.info('Invoices sync processed');
+        logger.info('Invoices sync processed');
     }
 
     @boundMethod

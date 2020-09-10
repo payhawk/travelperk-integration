@@ -6,7 +6,12 @@ export interface IInvoice {
     issuingDate: string;
     dueDate: string;
     currency: Currency;
-    total: string;
+    total: number;
+    taxesSummary: ITaxesSummaryItem[];
+}
+
+export interface ITaxesSummaryItem {
+    taxAmount: number;
 }
 
 export enum Currency {

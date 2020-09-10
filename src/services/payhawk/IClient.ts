@@ -3,10 +3,20 @@ import { Entities } from '@managers';
 export interface IClient {
     /**
      * Uploads an invoice document
-     * @param data Document data
-     * @param amount Invoice total amount
-     * @param currency Invoice paid currency
-     * @param date Invoice date of issuing
+     * @param document Document data
      */
-    uploadDocument(data: ArrayBuffer, amount: string, currency: Entities.Currency, date: string): Promise<void>;
+    uploadDocument(document: IDocument): Promise<void>;
+}
+
+export interface IDocument {
+    id: string;
+    name: string;
+    content: ArrayBuffer;
+    contentType: string;
+    paidDate: string;
+    currency: Entities.Currency;
+    totalAmount: number;
+    taxAmount: number;
+    documentDate: string;
+    documentNumber: string;
 }

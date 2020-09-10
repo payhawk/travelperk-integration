@@ -1,3 +1,3 @@
 export interface IManager {
-    syncInvoices(): Promise<void>;
+    syncInvoices(fromBeforeMinutes: number): Promise<void>;
 }

@@ -1,5 +1,3 @@
-import * as moment from 'moment';
-
 import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger, toShortDateFormat } from '@utils';
@@ -15,28 +13,25 @@ export class Manager implements IManager {
         private readonly logger: ILogger,
     ) { }
 
-    async getPaidInvoicesSinceLastSync(): Promise<IInvoice[]> {
+    async getLastInvoicesSync(): Promise<Date | undefined> {
         const lastSyncDate = await this.store.getLastSyncDate(this.accountId);
+        return lastSyncDate;
+    }
 
-        const now = moment.utc().toDate();
-        const nowFormatted = toShortDateFormat(now);
+    async updateLastInvoicesSync(syncedAt: Date): Promise<void> {
+        await this.store.updateLastSyncDate(this.accountId, syncedAt);
+    }
 
-        const invoicesForToday = await this.client.getInvoices(
+    async getPaidInvoices(after?: Date): Promise<IInvoice[]> {
+        const newPaidInvoices = await this.client.getInvoices(
             {
                 limit: 50,
                 status: TravelPerk.InvoiceStatus.Paid,
-                issuing_date_gte: lastSyncDate ? nowFormatted : undefined,
-                issuing_date_lte: nowFormatted,
+                issuing_date_gte: after ? toShortDateFormat(after) : undefined,
             }
         );
 
-        await this.store.updateLastSyncDate(this.accountId, now);
-
-        const invoicesForTodayNotYetSynced = invoicesForToday
-        .filter(i => moment.utc(i.issuing_date).toDate().getTime() > (lastSyncDate ? lastSyncDate.getTime() : 0))
-        .map(mapToInvoice);
-
-        return invoicesForTodayNotYetSynced;
+        return newPaidInvoices.map(mapToInvoice);
     }
 
     async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
@@ -44,15 +39,16 @@ export class Manager implements IManager {
     }
 }
 
-function mapToInvoice({ serial_number, status, profile_id, profile_name, currency, total, due_date, issuing_date }: TravelPerk.IInvoice): IInvoice {
+function mapToInvoice({ serial_number, status, profile_id, profile_name, currency, total, due_date, issuing_date, taxes_summary }: TravelPerk.IInvoice): IInvoice {
     return {
         serialNumber: serial_number,
         status,
         profileId: profile_id,
         profileName: profile_name,
         currency,
-        total,
+        total: Number(total),
         dueDate: due_date,
         issuingDate: issuing_date,
+        taxesSummary: taxes_summary.map(x => ({ taxAmount: Number(x.tax_amount) })),
     };
 }

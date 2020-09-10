@@ -1,4 +1,5 @@
 export interface IInvoice {
+    taxes_summary: ITaxesSummaryItem[];
     serial_number: string,
     status: InvoiceStatus;
     profile_id: string,
@@ -8,6 +9,10 @@ export interface IInvoice {
     currency: Currency,
     total: string,
     pdf: string;
+}
+
+export interface ITaxesSummaryItem {
+    tax_amount: string;
 }
 
 export enum Currency {

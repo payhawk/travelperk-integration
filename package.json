@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/jest": "26.0.13",
     "@types/module-alias": "2.0.0",
-    "@types/node": "^12.12.55",
+    "@types/node": "^12.12.56",
     "@types/node-rsa": "1.0.0",
     "@types/pg": "7.14.4",
     "@types/pino": "6.3.0",
@@ -56,10 +56,11 @@
   "dependencies": {
     "autobind-decorator": "2.4.0",
     "axios": "0.19.0",
+    "form-data": "3.0.0",
     "module-alias": "2.2.2",
     "moment": "2.27.0",
     "node-rsa": "1.1.1",
-    "openid-client": "3.15.10",
+    "openid-client": "4.0.0",
     "pg": "8.3.3",
     "pino": "6.6.0",
     "restify": "8.5.1",
