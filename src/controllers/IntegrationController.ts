@@ -84,7 +84,14 @@ export class IntegrationController {
                     await connectionManager.setPayhawkApiKey(data.apiKey);
                     res.send(204);
                     return;
+                case PayhawkEvent.Disconnect:
+                    logger.info('Disconnect received');
 
+                    await connectionManager.disconnect();
+
+                    logger.info('Disconnect processed');
+                    res.send(204);
+                    return;
                 default:
                     res.send(400, 'Unknown event');
                     return;

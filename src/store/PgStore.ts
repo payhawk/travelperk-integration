@@ -57,6 +57,18 @@ export class PgStore implements ISchemaStore {
         return record;
     }
 
+    async deleteAccessToken(accountId: string): Promise<void> {
+        await this.pgClient.query<IUserTokenSetRecord>({
+            text: `
+                DELETE FROM "${SCHEMA.TABLE_NAMES.ACCESS_TOKENS}"
+                WHERE "${UserTokenSetRecordKeys.account_id}"=$1
+            `,
+            values: [
+                accountId,
+            ],
+        });
+    }
+
     async getApiKey(accountId: string): Promise<string|undefined> {
         const query = await this.pgClient.query<{ key: string }>({
             text: `

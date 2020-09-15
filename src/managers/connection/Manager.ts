@@ -19,6 +19,10 @@ export class Manager implements IManager {
         return url;
     }
 
+    async disconnect(): Promise<void> {
+        await this.store.deleteAccessToken(this.accountId);
+    }
+
     async authenticate(code: string): Promise<TravelPerk.IAccessToken> {
         const accessToken = await this.authClient.getAccessToken(code);
 
