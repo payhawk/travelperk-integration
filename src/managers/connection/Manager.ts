@@ -2,7 +2,6 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger } from '@utils';
 
-import { toAccessToken } from '../../services/travelperk/client/Client';
 import { IManager } from './IManager';
 
 export class Manager implements IManager {
@@ -37,14 +36,18 @@ export class Manager implements IManager {
             return undefined;
         }
 
-        let accessToken: TravelPerk.IAccessToken | undefined = toAccessToken(accessTokenRecord.token_set);
+        let accessToken: TravelPerk.IAccessToken | undefined = TravelPerk.toAccessToken(accessTokenRecord.token_set);
 
-        const isExpired = accessToken.expired();
+        const isExpired = this.isAccessTokenExpired(accessToken);
         if (isExpired) {
             accessToken = await this.tryRefreshAccessToken(accessToken);
         }
 
         return accessToken;
+    }
+
+    isAccessTokenExpired(accessToken: TravelPerk.IAccessToken): boolean {
+        return accessToken.expires_in <= MIN_EXPIRATION_TIME;
     }
 
     async getPayhawkApiKey(): Promise<string> {
@@ -90,3 +93,5 @@ export class Manager implements IManager {
         });
     }
 }
+
+const MIN_EXPIRATION_TIME = 60; // seconds
