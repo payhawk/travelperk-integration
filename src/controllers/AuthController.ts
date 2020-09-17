@@ -94,7 +94,7 @@ export class AuthController {
         const accessToken = await connectionManager.getAccessToken();
 
         const connectionStatus: IConnectionStatus = {
-            isAlive: accessToken !== undefined && !accessToken.expired(),
+            isAlive: accessToken !== undefined && !connectionManager.isAccessTokenExpired(accessToken),
         };
 
         res.send(200, connectionStatus);

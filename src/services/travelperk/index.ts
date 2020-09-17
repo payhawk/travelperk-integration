@@ -8,6 +8,7 @@ import {
     IClient,
     IInvoice,
     InvoiceStatus,
+    toAccessToken,
 } from './client';
 import { getTravelPerkConfig } from './Config';
 
@@ -20,6 +21,7 @@ export {
     InvoiceStatus,
     createClient,
     getTravelPerkConfig,
+    toAccessToken,
 };
 
 export const createAuth = ({ accountId, returnUrl }: IAuthParams, logger: ILogger): IAuth => {
