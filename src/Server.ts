@@ -12,6 +12,11 @@ export const createServer = (authController: AuthController, integrationControll
         .use(restify.plugins.queryParser())
         .use(securityHeadersMiddleware());
 
+    // Serve public static files
+    server.get('/images/*', restify.plugins.serveStatic({
+        directory: `${process.cwd()}/public`,
+    }));
+
     // Endpoint used to check whether the service is up and running
     server.get('/status', (req, res) => res.send(200, 'OK'));
 
