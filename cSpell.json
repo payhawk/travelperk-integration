@@ -7,6 +7,7 @@
         "chmod",
         "ENTRYPOINT",
         "jsonb",
+        "nosniff",
         "openid",
         "payhawk",
         "pino",

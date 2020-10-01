@@ -133,6 +133,7 @@ export class AuthController {
     }
 
     private getAccountSelectorHtml(accounts: IAccount[], returnUrl: string, nonce: string) {
+        // cspell: disable
         const body = `
             <html>
                 <head>
@@ -228,6 +229,7 @@ export class AuthController {
                 </body>
             </html>
         `;
+        // cspell: enable
 
         return body;
     }
