@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { URL, URLSearchParams } from 'url';
 
 import { boundMethod } from 'autobind-decorator';
@@ -7,7 +8,7 @@ import { IConfig } from '@config';
 import { Connection } from '@managers';
 import { fromBase64, ILogger, requiredQueryParams } from '@utils';
 
-import { IConnectionStatus } from './contracts';
+import { IAccount, IConnectionStatus } from './contracts';
 
 export class AuthController {
     constructor(
@@ -17,19 +18,47 @@ export class AuthController {
     ) { }
 
     @boundMethod
-    @requiredQueryParams('accountId')
     async connect(req: Request, res: Response, next: Next) {
-        const { accountId, returnUrl: queryReturnUrl } = req.query;
+        const { accounts: accountsQueryString, accountId, returnUrl: queryReturnUrl } = req.query;
         const returnUrl = queryReturnUrl || '/';
 
-        const logger = this.baseLogger.child({ accountId, returnUrl }, req);
+        let logger = this.baseLogger;
+
+        if (!accountsQueryString && !accountId) {
+            logger.error(Error('Account is required'));
+            res.send(500);
+            return;
+        }
 
         logger.info('Connect started');
 
-        const connectionManager = this.connectionManagerFactory({ accountId, returnUrl }, logger);
-        const authorizationUrl = await connectionManager.getAuthorizationUrl();
+        if (accountId) {
+            logger = this.baseLogger.child({ accountId, returnUrl }, req);
 
-        res.redirect(authorizationUrl, next);
+            const connectionManager = this.connectionManagerFactory({ accountId, returnUrl }, logger);
+            const authorizationUrl = await connectionManager.getAuthorizationUrl();
+
+            res.redirect(authorizationUrl, next);
+        } else {
+            const accounts: IAccount[] = JSON.parse(fromBase64(accountsQueryString.toString()));
+            const nonce = crypto.randomBytes(16).toString('base64');
+            const body = this.getAccountSelectorHtml(accounts, returnUrl, nonce);
+
+            res.writeHead(200, {
+                'content-length': Buffer.byteLength(body),
+                'content-type': 'text/html',
+                'strict-transport-security': 'max-age=63072000; includeSubdomains; preload',
+                'content-security-policy': `default-src 'none'; img-src 'self'; style-src 'nonce-${nonce}'; script-src 'nonce-${nonce}'`,
+                'x-content-type-options': 'nosniff',
+                'x-xss-protection': '1; mode=block',
+                'referrer-policy': 'same-origin',
+                'x-permitted-cross-domain-policies': 'none',
+                'x-frame-options': 'DENY',
+            });
+
+            res.write(body);
+            res.end();
+        }
 
         logger.info('Connect completed');
     }
@@ -50,6 +79,9 @@ export class AuthController {
 
         const absoluteReturnUrl = `${this.config.portalUrl}${returnUrl.startsWith('/') ? returnUrl : `/${returnUrl}`}`;
         const url = new URL(absoluteReturnUrl);
+        if (!url.searchParams.has('account')) {
+            url.searchParams.append('account', accountId);
+        }
 
         const logger = this.baseLogger.child({ accountId }, req);
         if (error) {
@@ -98,5 +130,105 @@ export class AuthController {
         };
 
         res.send(200, connectionStatus);
+    }
+
+    private getAccountSelectorHtml(accounts: IAccount[], returnUrl: string, nonce: string) {
+        const body = `
+            <html>
+                <head>
+                    <title>Payhawk</title>
+                    <meta http-equiv="Pragma" content="no-cache" />
+                    <meta http-equiv="Expires" content="-1″ />
+                    <meta http-equiv="CACHE-CONTROL" content="NO-CACHE" />
+
+                    <style nonce="${nonce}">
+                        html {
+                            font-family: "Helvetica Neue", Roboto, Helvetica, Arial, sans-serif;
+                            font-size: 14px;
+                        }
+
+                        .phwk-tp-connect-page {
+                            background-color: #f4f5f6;
+                        }
+
+                        .phwk-container {
+                            width: fit-content;
+
+                            margin-top: 12rem;
+                            margin-left: auto;
+                            margin-right: auto;
+                        }
+
+                        .account-selector-form {
+                            border: 1px solid rgb(222, 226, 230);
+                            background-color: white;
+                            margin-top: 2rem;
+                            padding: 2rem 4rem;
+                        }
+
+                        .form-group > label {
+                            color: #9097a0;
+                        }
+
+                        button.btn-connect {
+                            font-weight: 500;
+                            background-color: #4189FF;
+                            border-color: #4189FF;
+                            border-radius: 17.5px;
+                        }
+
+                        button.btn-connect:hover {
+                            background-color: #1B71FF;
+                            border-color: #1B71FF;
+                        }
+
+                        img.phwk-logo {
+                           display: block;
+                           margin: auto;
+                        }
+                    </style>
+                    <script nonce="${nonce}">
+                    function onClick</script>
+                    <script
+                        nonce="${nonce}"
+                        src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+                        integrity="sha256-4+XzXVhsDmqanXGHaHvgh1gMQKX40OUvDEBTu8JcmNs="
+                        crossorigin="anonymous">
+                    </script>
+                    <link
+                        nonce="${nonce}"
+                        rel="stylesheet"
+                        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+                        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+                        crossorigin="anonymous"
+                    >
+                    <script
+                        nonce="${nonce}"
+                        src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+                        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+                        crossorigin="anonymous">
+                    </script>
+                </head>
+                <body class="phwk-tp-connect-page">
+                    <div class="phwk-container">
+                        <img class="phwk-logo" src="/images/logo.png" />
+                        <form action="/connect?returnUrl=${encodeURIComponent(returnUrl)}" method="GET" class="account-selector-form">
+                            <div class="form-group">
+                                <label for="accountSelector">Select an account</label>
+                                <select class="form-control" name="accountId" id="accountSelector">
+                                    ${accounts.map(a => `<option value="${a.id}">${a.name}</option>`)}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <input type="hidden" name="returnUrl" value="${returnUrl}" />
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3 btn-connect">Connect</button>
+                        </form>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        return body;
     }
 }
