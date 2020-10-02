@@ -19,4 +19,5 @@ export interface IDocument {
     taxAmount: number;
     documentDate: string;
     documentNumber: string;
+    serializedItems: string;
 }

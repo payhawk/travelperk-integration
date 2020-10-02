@@ -50,5 +50,6 @@ function mapInvoiceToDocument(fileContents: ArrayBuffer, invoice: Entities.IInvo
         currency: invoice.currency,
         totalAmount: invoice.total,
         taxAmount: invoice.taxesSummary.map(x => x.taxAmount).reduce((a, b) => (a + b), 0),
+        serializedItems: JSON.stringify(invoice.items),
     };
 }

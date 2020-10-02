@@ -9,6 +9,15 @@ export interface IInvoice {
     currency: Currency,
     total: string,
     pdf: string;
+    lines: IInvoiceLineItem[];
+}
+
+export interface IInvoiceLineItem {
+    expense_date: string;
+    description: string;
+    tax_percentage: string;
+    tax_amount: string;
+    total_amount: string;
 }
 
 export interface ITaxesSummaryItem {

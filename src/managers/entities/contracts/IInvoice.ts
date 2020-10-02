@@ -8,6 +8,15 @@ export interface IInvoice {
     currency: Currency;
     total: number;
     taxesSummary: ITaxesSummaryItem[];
+    items: IInvoiceItem[],
+}
+
+export interface IInvoiceItem {
+    expenseDate: string;
+    description: string;
+    taxPercentage: string;
+    taxAmount: string;
+    totalAmount: string;
 }
 
 export interface ITaxesSummaryItem {
