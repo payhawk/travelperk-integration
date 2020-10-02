@@ -7,6 +7,21 @@ import { IInvoice } from './IInvoice';
  */
 export interface IClient {
     /**
+     * Auth client wrapper for connecting, disconnecting and managing access tokens
+     */
+    auth: IAuthClient;
+
+    /**
+     * Invoices client wrapper for retrieving invoices, invoice lines and invoice documents
+     */
+    invoices: IInvoicesClient;
+}
+
+/**
+ * An interface for a TravelPerk auth client wrapper
+ */
+export interface IAuthClient {
+    /**
      * Builds URL for user login and consent, and returns it
      */
     buildConsentUrl(): string;
@@ -22,7 +37,12 @@ export interface IClient {
      * @param currentToken Token set that will be used to obtain a refreshed token
      */
     refreshAccessToken(currentToken: IAccessToken): Promise<IAccessToken>;
+}
 
+/**
+ * An interface for a TravelPerk invoices client wrapper
+ */
+export interface IInvoicesClient {
     /**
      * Retrieves all invoices
      */

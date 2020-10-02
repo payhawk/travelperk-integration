@@ -23,7 +23,7 @@ export class Manager implements IManager {
     }
 
     async getPaidInvoices(after?: Date): Promise<IInvoice[]> {
-        const newPaidInvoices = await this.client.getInvoices(
+        const newPaidInvoices = await this.client.invoices.getInvoices(
             {
                 limit: 50,
                 status: TravelPerk.InvoiceStatus.Paid,
@@ -35,7 +35,7 @@ export class Manager implements IManager {
     }
 
     async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
-        return this.client.getInvoiceDocument(serialNumber);
+        return this.client.invoices.getInvoiceDocument(serialNumber);
     }
 }
 
