@@ -22,4 +22,8 @@ export class Auth implements IAuth {
     async refreshAccessToken(currentToken: IAccessToken): Promise<IAccessToken> {
         return this.client.auth.refreshAccessToken(currentToken);
     }
+
+    async revokeAccessToken(currentToken: IAccessToken): Promise<void> {
+        return this.client.auth.revokeAccessToken(currentToken);
+    }
 }

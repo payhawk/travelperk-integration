@@ -1,3 +1,5 @@
+export * from './IAuthClient';
+export * from './IInvoicesClient';
 export * from './IClient';
 export * from './IInvoice';
 

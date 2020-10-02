@@ -119,5 +119,5 @@ const CONTENT_TYPE_HEADER = 'Content-Type';
 const API_VERSION_HEADER = 'Api-Version';
 const API_VERSION = '1';
 
-const MAX_RETRIES = 3;
-const DEFAULT_SECONDS_TO_RETRY_AFTER = 1;
+const MAX_RETRIES = 5;
+const DEFAULT_SECONDS_TO_RETRY_AFTER = 60;

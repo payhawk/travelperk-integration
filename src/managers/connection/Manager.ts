@@ -19,6 +19,13 @@ export class Manager implements IManager {
     }
 
     async disconnect(): Promise<void> {
+        const accessTokenRecord = await this.store.getAccessToken(this.accountId);
+        if (!accessTokenRecord) {
+            this.logger.info('No access token found. Nothing to disconnect');
+            return;
+        }
+
+        await this.authClient.revokeAccessToken(TravelPerk.toAccessToken(accessTokenRecord.token_set));
         await this.store.deleteAccessToken(this.accountId);
     }
 

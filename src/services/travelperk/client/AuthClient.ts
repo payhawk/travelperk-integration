@@ -65,6 +65,28 @@ export class AuthClient implements IAuthClient {
 
         return toAccessToken(result);
     }
+
+    async revokeAccessToken(currentToken: IAccessToken): Promise<void> {
+        const requestUrl = buildAuthUrl('/accounts/oauth2/revoke_token/');
+
+        const result = await this.client.request<ITokenSet>({
+            method: 'POST',
+            url: requestUrl,
+            contentType: 'application/x-www-form-urlencoded',
+            data: toUrlParams(
+                {
+                    token_type_hint: 'refresh_token',
+                    token: currentToken.refresh_token,
+                    client_id: this.config.clientId,
+                    client_secret: this.config.clientSecret,
+                }
+            ),
+        });
+
+        if (result) {
+            return;
+        }
+    }
 }
 
 export const toAccessToken = (tokenSet: ITokenSet): IAccessToken => {

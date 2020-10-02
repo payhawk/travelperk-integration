@@ -1,6 +1,8 @@
 import { ITokenSet } from '@store';
 
+import { IAuthClient } from './IAuthClient';
 import { IInvoice } from './IInvoice';
+import { IInvoicesClient } from './IInvoicesClient';
 
 /**
  * An interface for a TravelPerk client wrapper that enables making TravelPerk API calls
@@ -15,44 +17,6 @@ export interface IClient {
      * Invoices client wrapper for retrieving invoices, invoice lines and invoice documents
      */
     invoices: IInvoicesClient;
-}
-
-/**
- * An interface for a TravelPerk auth client wrapper
- */
-export interface IAuthClient {
-    /**
-     * Builds URL for user login and consent, and returns it
-     */
-    buildConsentUrl(): string;
-
-    /**
-     * Exchanges temporary auth code with access token / refresh token pair
-     * @param code Authorization code
-     */
-    getAccessToken(code: string): Promise<IAccessToken>;
-
-    /**
-     * Uses current refresh token to exchange expired access token new with access token / refresh token pair
-     * @param currentToken Token set that will be used to obtain a refreshed token
-     */
-    refreshAccessToken(currentToken: IAccessToken): Promise<IAccessToken>;
-}
-
-/**
- * An interface for a TravelPerk invoices client wrapper
- */
-export interface IInvoicesClient {
-    /**
-     * Retrieves all invoices
-     */
-    getInvoices(filter?: IInvoicesFilter): Promise<IInvoice[]>;
-
-    /**
-     * Gets invoice document
-     * @param serialNumber Invoice serial number
-     */
-    getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer>;
 }
 
 export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {

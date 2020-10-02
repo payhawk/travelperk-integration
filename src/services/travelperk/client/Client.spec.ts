@@ -16,7 +16,10 @@ describe('TravelPerk client tests', () => {
         state: '123',
     };
 
-    const client = new Client(new AuthClient(httpMock.object, config), new InvoicesClient(httpMock.object));
+    const client = new Client(
+        new AuthClient(httpMock.object, config),
+        new InvoicesClient(httpMock.object),
+    );
 
     it('should build consent URL', () => {
         const url = client.auth.buildConsentUrl();
