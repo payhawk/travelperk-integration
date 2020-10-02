@@ -1,4 +1,3 @@
-import { IInvoicesFilter } from './IClient';
 import { IInvoice } from './IInvoice';
 
 /**
@@ -16,4 +15,21 @@ export interface IInvoicesClient {
      * @param serialNumber Invoice serial number
      */
     getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer>;
+}
+
+export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {
+    /**
+     * Page size - between 10 and 50 inclusive
+     */
+    limit?: number;
+
+    /**
+     * Format is YYYY-MM-DD
+     */
+    issuing_date_gte?: string;
+
+    /**
+     * Format is YYYY-MM-DD
+     */
+    issuing_date_lte?: string;
 }
