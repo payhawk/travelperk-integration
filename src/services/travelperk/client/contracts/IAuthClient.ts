@@ -1,4 +1,4 @@
-import { IAccessToken } from './IClient';
+import { ITokenSet } from '@store';
 
 /**
  * An interface for a TravelPerk auth client wrapper
@@ -27,4 +27,8 @@ export interface IAuthClient {
      * @param currentToken Token set that will be revoked
      */
     revokeAccessToken(currentToken: IAccessToken): Promise<void>;
+}
+
+export interface IAccessToken extends Required<ITokenSet> {
+    expired(): boolean;
 }
