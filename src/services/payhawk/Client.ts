@@ -16,7 +16,7 @@ export class Client implements IClient {
         });
     }
 
-    async uploadDocument({ id, name, content, contentType, paidDate, documentDate, documentNumber, currency, totalAmount, taxAmount }: IDocument): Promise<void> {
+    async uploadDocument({ id, name, content, contentType, paidDate, documentDate, documentNumber, currency, totalAmount, taxAmount, serializedItems }: IDocument): Promise<void> {
         const formData = new FormData();
         formData.append('file', content, { filename: name, contentType });
 
@@ -36,6 +36,7 @@ export class Client implements IClient {
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Currency`]: currency,
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Date`]: documentDate,
                     [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Number`]: documentNumber,
+                    [`${PAYHAWK_INVOICE_HEADER_PREFIX}-Items`]: serializedItems,
                     ...formData.getHeaders(),
                 },
             }

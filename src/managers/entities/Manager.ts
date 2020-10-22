@@ -2,7 +2,7 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger, toShortDateFormat } from '@utils';
 
-import { IInvoice, IManager } from './contracts';
+import { IInvoice, IInvoiceItem, IManager } from './contracts';
 
 export class Manager implements IManager {
     constructor(
@@ -39,7 +39,27 @@ export class Manager implements IManager {
     }
 }
 
-function mapToInvoice({ serial_number, status, profile_id, profile_name, currency, total, due_date, issuing_date, taxes_summary }: TravelPerk.IInvoice): IInvoice {
+function toInvoiceItem(lineItem: TravelPerk.IInvoiceLineItem): IInvoiceItem {
+    return {
+        description: lineItem.description,
+        taxAmount: lineItem.tax_amount,
+        taxPercentage: lineItem.tax_percentage,
+        totalAmount: lineItem.total_amount,
+        expenseDate: lineItem.expense_date,
+    };
+}
+
+function mapToInvoice({
+    serial_number,
+    status, profile_id,
+    profile_name,
+    currency,
+    total,
+    due_date,
+    issuing_date,
+    taxes_summary,
+    lines,
+}: TravelPerk.IInvoice): IInvoice {
     return {
         serialNumber: serial_number,
         status,
@@ -50,5 +70,6 @@ function mapToInvoice({ serial_number, status, profile_id, profile_name, currenc
         dueDate: due_date,
         issuingDate: issuing_date,
         taxesSummary: taxes_summary.map(x => ({ taxAmount: Number(x.tax_amount) })),
+        items: lines.map(toInvoiceItem),
     };
 }

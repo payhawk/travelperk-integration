@@ -7,6 +7,7 @@ import {
     IAccessToken,
     IClient,
     IInvoice,
+    IInvoiceLineItem,
     InvoiceStatus,
     toAccessToken,
 } from './client';
@@ -18,6 +19,7 @@ export {
     IClient,
     IAccessToken,
     IInvoice,
+    IInvoiceLineItem,
     InvoiceStatus,
     createClient,
     getTravelPerkConfig,
