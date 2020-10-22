@@ -2,10 +2,10 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger } from '@utils';
 
-import { Currency, IInvoice, IManager } from './contracts';
+import { Currency, IInvoice, IInvoiceLine, IManager } from './contracts';
 import { Manager } from './Manager';
 
-export { IManager, IInvoice, Currency };
+export { IManager, IInvoice, IInvoiceLine, Currency };
 
 export type IManagerFactory = (client: TravelPerk.IClient, store: IStore, accountId: string, logger: ILogger) => IManager;
 

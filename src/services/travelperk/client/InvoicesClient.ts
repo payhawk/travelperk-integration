@@ -1,5 +1,5 @@
 import { IHttpClient } from '../http';
-import { buildApiUrl, IGetInvoicesFilter, IInvoice, IInvoicesClient, IInvoicesFilter, IInvoicesResponse } from './contracts';
+import { buildApiUrl, IGetInvoicesFilter, IInvoice, IInvoiceLine, IInvoiceLinesFilter, IInvoiceLinesResponse, IInvoicesClient, IInvoicesFilter, IInvoicesResponse } from './contracts';
 
 export class InvoicesClient implements IInvoicesClient {
     constructor(
@@ -8,30 +8,36 @@ export class InvoicesClient implements IInvoicesClient {
 
     async getInvoices(filter?: IGetInvoicesFilter): Promise<IInvoice[]> {
         let result: IInvoice[] = [];
-
         let page = 0;
+        let pageResult: IInvoicesResponse;
 
-        const filterQuery: IInvoicesFilter = {
-            limit: DEFAULT_INVOICES_LIMIT,
-            offset: page * DEFAULT_INVOICES_LIMIT,
-            ...(filter || {}),
-        };
+        do {
+            const filterQuery: IInvoicesFilter = {
+                limit: DEFAULT_PAGINATION_LIMIT,
+                offset: page * DEFAULT_PAGINATION_LIMIT,
+                ...(filter || {}),
+            };
 
-        let url = buildApiUrl('/invoices', filterQuery);
-        let pageResult = await this.client.request<IInvoicesResponse>({ url, method: 'GET' });
-
-        result = result.concat(pageResult.invoices);
-
-        while (pageResult.total > result.length) {
-            page++;
-
-            filterQuery.offset = page * DEFAULT_INVOICES_LIMIT;
-
-            url = buildApiUrl('/invoices', filterQuery);
+            const url = buildApiUrl('/invoices', filterQuery);
             pageResult = await this.client.request<IInvoicesResponse>({ url, method: 'GET' });
-        }
+
+            result = result.concat(pageResult.invoices);
+
+            page++;
+        } while (pageResult.total > result.length);
 
         return result;
+    }
+
+    async getInvoiceLineItems(serialNumber: string): Promise<IInvoiceLine[]> {
+        const queryFilter: IInvoiceLinesFilter = {
+            serial_number: serialNumber,
+            limit: DEFAULT_PAGINATION_LIMIT,
+        };
+
+        const url = buildApiUrl('/invoices/lines', queryFilter);
+        const result = await this.client.request<IInvoiceLinesResponse>({ url, method: 'GET'});
+        return result.invoice_lines;
     }
 
     async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
@@ -41,4 +47,4 @@ export class InvoicesClient implements IInvoicesClient {
     }
 }
 
-const DEFAULT_INVOICES_LIMIT = 50;
+const DEFAULT_PAGINATION_LIMIT = 1;

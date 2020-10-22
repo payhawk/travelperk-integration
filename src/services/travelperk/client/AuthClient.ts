@@ -69,7 +69,7 @@ export class AuthClient implements IAuthClient {
     async revokeAccessToken(currentToken: IAccessToken): Promise<void> {
         const requestUrl = buildAuthUrl('/accounts/oauth2/revoke_token/');
 
-        const result = await this.client.request<ITokenSet>({
+        await this.client.request<ITokenSet>({
             method: 'POST',
             url: requestUrl,
             contentType: 'application/x-www-form-urlencoded',
@@ -82,10 +82,6 @@ export class AuthClient implements IAuthClient {
                 }
             ),
         });
-
-        if (result) {
-            return;
-        }
     }
 }
 

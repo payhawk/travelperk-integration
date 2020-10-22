@@ -2,7 +2,7 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger, toShortDateFormat } from '@utils';
 
-import { IInvoice, IInvoiceItem, IManager, ITaxesSummaryItem } from './contracts';
+import { IInvoice, IInvoiceLine, IManager, ITaxesSummaryItem } from './contracts';
 
 export class Manager implements IManager {
     constructor(
@@ -33,6 +33,11 @@ export class Manager implements IManager {
         return newPaidInvoices.map(mapToInvoice);
     }
 
+    async getInvoiceLines(serialNumber: string): Promise<IInvoiceLine[]> {
+        const items = await this.client.invoices.getInvoiceLineItems(serialNumber);
+        return items.map(mapToInvoiceLineItem);
+    }
+
     async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
         return this.client.invoices.getInvoiceDocument(serialNumber);
     }
@@ -47,7 +52,6 @@ function mapToInvoice({
     due_date,
     issuing_date,
     taxes_summary,
-    lines,
 }: TravelPerk.IInvoice): IInvoice {
     return {
         serialNumber: serial_number,
@@ -59,11 +63,10 @@ function mapToInvoice({
         dueDate: due_date,
         issuingDate: issuing_date,
         taxesSummary: taxes_summary.map(mapToTaxesSummaryItem),
-        items: lines.map(mapToInvoiceLineItem),
     };
 }
 
-function mapToInvoiceLineItem(lineItem: TravelPerk.IInvoiceLineItem): IInvoiceItem {
+function mapToInvoiceLineItem(lineItem: TravelPerk.IInvoiceLine): IInvoiceLine {
     return {
         description: lineItem.description,
         taxAmount: lineItem.tax_amount,

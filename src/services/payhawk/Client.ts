@@ -16,7 +16,7 @@ export class Client implements IClient {
         });
     }
 
-    async uploadDocument({ id, name, content, contentType, paidDate, documentDate, documentNumber, currency, totalAmount, taxAmount, serializedItems }: IDocument): Promise<void> {
+    async uploadDocument({ id, name, content, contentType, paidDate, documentDate, documentNumber, currency, totalAmount, taxAmount, serializedLineItems: serializedItems }: IDocument): Promise<void> {
         const formData = new FormData();
         formData.append('file', content, { filename: name, contentType });
 
