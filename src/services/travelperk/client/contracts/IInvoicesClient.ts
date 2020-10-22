@@ -8,7 +8,7 @@ export interface IInvoicesClient {
     /**
      * Retrieves all invoices
      */
-    getInvoices(filter?: IInvoicesFilter): Promise<IInvoice[]>;
+    getInvoices(filter?: IGetInvoicesFilter): Promise<IInvoice[]>;
 
     /**
      * Gets invoice document
@@ -24,6 +24,11 @@ export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {
     limit?: number;
 
     /**
+     * Pagination offset index, 0 based.
+     */
+    offset?: number;
+
+    /**
      * Format is YYYY-MM-DD
      */
     issuing_date_gte?: string;
@@ -33,3 +38,5 @@ export interface IInvoicesFilter extends Pick<Partial<IInvoice>, 'status'> {
      */
     issuing_date_lte?: string;
 }
+
+export type IGetInvoicesFilter = Omit<IInvoicesFilter, 'limit' | 'offset'>;

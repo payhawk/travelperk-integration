@@ -9,6 +9,7 @@ import {
     IInvoice,
     IInvoiceLineItem,
     InvoiceStatus,
+    ITaxesSummaryItem,
     toAccessToken,
 } from './client';
 import { getTravelPerkConfig } from './Config';
@@ -20,6 +21,7 @@ export {
     IAccessToken,
     IInvoice,
     IInvoiceLineItem,
+    ITaxesSummaryItem,
     InvoiceStatus,
     createClient,
     getTravelPerkConfig,
