@@ -20,7 +20,7 @@ export class IntegrationController {
     async syncInvoices(req: Request, res: Response) {
         const { fromBeforeMinutes } = req.body as ISyncInvoicesPayload;
 
-        const logger = this.baseLogger.child({ fromBeforeMinutes });
+        let logger = this.baseLogger.child({ fromBeforeMinutes });
         logger.info('Invoices sync received');
 
         const accountsManager = this.accountsManagerFactory(logger);
@@ -30,6 +30,8 @@ export class IntegrationController {
         } else {
             for (const accountId of connectedAccountIds) {
                 try {
+                    logger = logger.child({ accountId });
+
                     await this.syncInvoicesForAccount(accountId, fromBeforeMinutes, logger);
                 } catch (err) {
                     if (err instanceof TravelPerk.UnauthorizedError) {
@@ -91,14 +93,12 @@ export class IntegrationController {
     }
 
     private async syncInvoicesForAccount(accountId: string, fromBeforeMinutes: number, logger: ILogger): Promise<void> {
-        const accountLogger = logger.child({ accountId });
+        logger.info('Processing started');
 
-        accountLogger.info('Processing started');
-
-        const connectionManager = this.connectionManagerFactory({ accountId }, accountLogger);
+        const connectionManager = this.connectionManagerFactory({ accountId }, logger);
         const accessToken = await connectionManager.getAccessToken();
         if (!accessToken) {
-            accountLogger.error(Error('Could not retrieve valid access token'));
+            logger.error(Error('Could not retrieve valid access token'));
             return;
         }
 
@@ -110,7 +110,7 @@ export class IntegrationController {
                 payhawkApiKey,
                 accessToken,
             },
-            accountLogger,
+            logger,
         );
 
         await integrationManager.syncInvoices(fromBeforeMinutes);
