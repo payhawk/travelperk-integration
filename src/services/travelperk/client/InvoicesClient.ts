@@ -31,8 +31,9 @@ export class InvoicesClient implements IInvoicesClient {
 
     async getInvoiceLineItems(serialNumber: string): Promise<IInvoiceLine[]> {
         const queryFilter: IInvoiceLinesFilter = {
-            serial_number: serialNumber,
             limit: DEFAULT_PAGINATION_LIMIT,
+            offset: 0,
+            serial_number: serialNumber,
         };
 
         const url = buildApiUrl('/invoices/lines', queryFilter);
@@ -47,4 +48,4 @@ export class InvoicesClient implements IInvoicesClient {
     }
 }
 
-const DEFAULT_PAGINATION_LIMIT = 1;
+const DEFAULT_PAGINATION_LIMIT = 50;
