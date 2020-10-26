@@ -9,10 +9,9 @@ export interface IInvoice {
     currency: Currency,
     total: string,
     pdf: string;
-    lines: IInvoiceLineItem[];
 }
 
-export interface IInvoiceLineItem {
+export interface IInvoiceLine {
     expense_date: string;
     description: string;
     tax_percentage: string;
@@ -38,9 +37,16 @@ export enum InvoiceStatus {
     Unpaid = 'unpaid',
 }
 
-export interface IInvoicesResponse {
+export interface IPaginatedResponse {
     total: number;
     limit: number;
     offset: number;
+}
+
+export interface IInvoicesResponse extends IPaginatedResponse {
     invoices: IInvoice[];
+}
+
+export interface IInvoiceLinesResponse extends IPaginatedResponse {
+    invoice_lines: IInvoiceLine[];
 }

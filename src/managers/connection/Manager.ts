@@ -45,16 +45,12 @@ export class Manager implements IManager {
 
         let accessToken: TravelPerk.IAccessToken | undefined = TravelPerk.toAccessToken(accessTokenRecord.token_set);
 
-        const isExpired = this.isAccessTokenExpired(accessToken);
+        const isExpired = TravelPerk.isAccessTokenExpired(accessToken);
         if (isExpired) {
             accessToken = await this.tryRefreshAccessToken(accessToken);
         }
 
         return accessToken;
-    }
-
-    isAccessTokenExpired(accessToken: TravelPerk.IAccessToken): boolean {
-        return accessToken.expires_in <= MIN_EXPIRATION_TIME;
     }
 
     async getPayhawkApiKey(): Promise<string> {
@@ -71,26 +67,19 @@ export class Manager implements IManager {
     }
 
     private async tryRefreshAccessToken(currentToken: TravelPerk.IAccessToken): Promise<TravelPerk.IAccessToken | undefined> {
-        try {
-            if (!currentToken.refresh_token) {
-                this.logger.info('Current token is expired and cannot be refreshed. Must re-authenticate.');
-                return undefined;
-            }
-
-            const refreshedAccessToken = await this.authClient.refreshAccessToken(currentToken);
-
-            if (!refreshedAccessToken) {
-                return undefined;
-            }
-
-            await this.saveAccessToken(refreshedAccessToken);
-            return refreshedAccessToken;
-        } catch (err) {
-            const error = Error(`Failed to refresh access token - ${err.toString()}`);
-            this.logger.error(error);
+        if (!currentToken.refresh_token) {
+            this.logger.info('Token set does not contain refresh token so it cannot be refreshed. Must re-authenticate.');
+            return undefined;
         }
 
-        return undefined;
+        const refreshedAccessToken = await this.authClient.refreshAccessToken(currentToken);
+        if (!refreshedAccessToken) {
+            return undefined;
+        }
+
+        await this.saveAccessToken(refreshedAccessToken);
+
+        return refreshedAccessToken;
     }
 
     private async saveAccessToken(accessToken: TravelPerk.IAccessToken) {
@@ -100,5 +89,3 @@ export class Manager implements IManager {
         });
     }
 }
-
-const MIN_EXPIRATION_TIME = 60; // seconds

@@ -2,7 +2,7 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger, toShortDateFormat } from '@utils';
 
-import { IInvoice, IInvoiceItem, IManager } from './contracts';
+import { IInvoice, IInvoiceLine, IManager, ITaxesSummaryItem } from './contracts';
 
 export class Manager implements IManager {
     constructor(
@@ -25,7 +25,6 @@ export class Manager implements IManager {
     async getPaidInvoices(after?: Date): Promise<IInvoice[]> {
         const newPaidInvoices = await this.client.invoices.getInvoices(
             {
-                limit: 50,
                 status: TravelPerk.InvoiceStatus.Paid,
                 issuing_date_gte: after ? toShortDateFormat(after) : undefined,
             }
@@ -34,19 +33,14 @@ export class Manager implements IManager {
         return newPaidInvoices.map(mapToInvoice);
     }
 
+    async getInvoiceLines(serialNumber: string): Promise<IInvoiceLine[]> {
+        const items = await this.client.invoices.getInvoiceLineItems(serialNumber);
+        return items.map(mapToInvoiceLineItem);
+    }
+
     async getInvoiceDocument(serialNumber: string): Promise<ArrayBuffer> {
         return this.client.invoices.getInvoiceDocument(serialNumber);
     }
-}
-
-function toInvoiceItem(lineItem: TravelPerk.IInvoiceLineItem): IInvoiceItem {
-    return {
-        description: lineItem.description,
-        taxAmount: lineItem.tax_amount,
-        taxPercentage: lineItem.tax_percentage,
-        totalAmount: lineItem.total_amount,
-        expenseDate: lineItem.expense_date,
-    };
 }
 
 function mapToInvoice({
@@ -58,7 +52,6 @@ function mapToInvoice({
     due_date,
     issuing_date,
     taxes_summary,
-    lines,
 }: TravelPerk.IInvoice): IInvoice {
     return {
         serialNumber: serial_number,
@@ -69,7 +62,22 @@ function mapToInvoice({
         total: Number(total),
         dueDate: due_date,
         issuingDate: issuing_date,
-        taxesSummary: taxes_summary.map(x => ({ taxAmount: Number(x.tax_amount) })),
-        items: lines.map(toInvoiceItem),
+        taxesSummary: taxes_summary.map(mapToTaxesSummaryItem),
+    };
+}
+
+function mapToInvoiceLineItem(lineItem: TravelPerk.IInvoiceLine): IInvoiceLine {
+    return {
+        description: lineItem.description,
+        taxAmount: lineItem.tax_amount,
+        taxPercentage: lineItem.tax_percentage,
+        totalAmount: lineItem.total_amount,
+        expenseDate: lineItem.expense_date,
+    };
+}
+
+function mapToTaxesSummaryItem(summaryItem: TravelPerk.ITaxesSummaryItem): ITaxesSummaryItem {
+    return {
+        taxAmount: Number(summaryItem.tax_amount),
     };
 }

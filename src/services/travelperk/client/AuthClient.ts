@@ -69,7 +69,7 @@ export class AuthClient implements IAuthClient {
     async revokeAccessToken(currentToken: IAccessToken): Promise<void> {
         const requestUrl = buildAuthUrl('/accounts/oauth2/revoke_token/');
 
-        const result = await this.client.request<ITokenSet>({
+        await this.client.request<ITokenSet>({
             method: 'POST',
             url: requestUrl,
             contentType: 'application/x-www-form-urlencoded',
@@ -82,10 +82,6 @@ export class AuthClient implements IAuthClient {
                 }
             ),
         });
-
-        if (result) {
-            return;
-        }
     }
 }
 
@@ -93,8 +89,14 @@ export const toAccessToken = (tokenSet: ITokenSet): IAccessToken => {
     return new TokenSet({ ...tokenSet }) as IAccessToken;
 };
 
+export const isAccessTokenExpired = (accessToken: IAccessToken): boolean => {
+    return !Number.isInteger(accessToken.expires_in) || accessToken.expires_in <= MIN_EXPIRATION_TIME;
+};
+
 function buildAuthUrl(path: string, query?: IQuery): string {
     return buildUrl(AUTH_BASE_PATH, path, query);
 }
 
 const AUTH_BASE_PATH = 'https://app.travelperk.com';
+
+const MIN_EXPIRATION_TIME = 60; // seconds

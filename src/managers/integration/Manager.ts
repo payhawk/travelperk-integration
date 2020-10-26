@@ -25,7 +25,8 @@ export class Manager implements IManager {
             const invoiceLogger = this.logger.child({ invoiceSerialNumber: invoice.serialNumber });
 
             const fileContents = await this.travelperkEntities.getInvoiceDocument(invoice.serialNumber);
-            const document = mapInvoiceToDocument(fileContents, invoice);
+            const invoiceLines = await this.travelperkEntities.getInvoiceLines(invoice.serialNumber);
+            const document = mapInvoiceToDocument(fileContents, invoice, invoiceLines);
 
             invoiceLogger.info('Uploading started');
 
@@ -38,7 +39,7 @@ export class Manager implements IManager {
     }
 }
 
-function mapInvoiceToDocument(fileContents: ArrayBuffer, invoice: Entities.IInvoice): Payhawk.IDocument {
+function mapInvoiceToDocument(fileContents: ArrayBuffer, invoice: Entities.IInvoice, invoiceLines: Entities.IInvoiceLine[]): Payhawk.IDocument {
     return {
         id: invoice.serialNumber,
         name: `${invoice.serialNumber}.pdf`,
@@ -50,6 +51,6 @@ function mapInvoiceToDocument(fileContents: ArrayBuffer, invoice: Entities.IInvo
         currency: invoice.currency,
         totalAmount: invoice.total,
         taxAmount: invoice.taxesSummary.map(x => x.taxAmount).reduce((a, b) => (a + b), 0),
-        serializedItems: JSON.stringify(invoice.items),
+        serializedLineItems: JSON.stringify(invoiceLines),
     };
 }

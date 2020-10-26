@@ -1,0 +1,114 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PgStore should match snapshot for deleting access token 1`] = `
+Object {
+  "text": "
+                DELETE FROM \\"access_tokens\\"
+                WHERE \\"account_id\\"=$1
+            ",
+  "values": Array [
+    "acc_id",
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for getting access token for account 1`] = `
+Object {
+  "text": "
+                SELECT * FROM \\"access_tokens\\"
+                WHERE \\"account_id\\"=$1
+            ",
+  "values": Array [
+    "acc_id",
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for getting all tokens 1`] = `
+Object {
+  "text": "SELECT * FROM \\"access_tokens\\"",
+}
+`;
+
+exports[`PgStore should match snapshot for getting api key 1`] = `
+Object {
+  "text": "
+                SELECT \\"key\\" FROM \\"payhawk_api_keys\\"
+                WHERE \\"account_id\\" = $1
+            ",
+  "values": Array [
+    "acc_id",
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for getting last sync date for account 1`] = `
+Object {
+  "text": "
+                SELECT \\"last_sync_at\\" FROM \\"invoices_sync_history\\"
+                WHERE \\"account_id\\" = $1
+            ",
+  "values": Array [
+    "acc_id",
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for getting last sync date for account 2`] = `
+Object {
+  "text": "
+                INSERT INTO \\"invoices_sync_history\\"
+                    (\\"account_id\\", \\"last_sync_at\\")
+                VALUES ($1, $2)
+                ON CONFLICT (\\"account_id\\")
+                DO
+                    UPDATE SET \\"last_sync_at\\" = $2
+            ",
+  "values": Array [
+    "acc_id",
+    2020-02-02T00:00:00.000Z,
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for saving access token 1`] = `
+Object {
+  "text": "
+                INSERT INTO \\"access_tokens\\" (
+                    \\"account_id\\",
+                    \\"token_set\\"
+                )
+                VALUES ($1, $2)
+                ON CONFLICT (\\"account_id\\")
+                DO
+                    UPDATE SET
+                        \\"token_set\\" = $2,
+                        \\"updated_at\\" = now();
+            ",
+  "values": Array [
+    "acc_id",
+    Object {
+      "access_token": "a",
+      "refresh_token": "r",
+      "scope": "s",
+      "token_type": "Bearer",
+    },
+  ],
+}
+`;
+
+exports[`PgStore should match snapshot for setting api key 1`] = `
+Object {
+  "text": "
+                INSERT INTO \\"payhawk_api_keys\\" (\\"account_id\\", \\"key\\")
+                VALUES ($1, $2)
+                ON CONFLICT (\\"account_id\\")
+                DO
+                    UPDATE SET \\"key\\" = $2, \\"updated_at\\" = NOW()
+            ",
+  "values": Array [
+    "acc_id",
+    "key",
+  ],
+}
+`;

@@ -4,5 +4,5 @@ export interface IConnectionStatus {
 }
 
 export enum ConnectionMessage {
-    TokenExpired = 'token_expired'
+    DisconnectedRemotely = 'disconnected_remotely',
 }

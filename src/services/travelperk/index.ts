@@ -7,11 +7,14 @@ import {
     IAccessToken,
     IClient,
     IInvoice,
-    IInvoiceLineItem,
+    IInvoiceLine,
     InvoiceStatus,
+    isAccessTokenExpired,
+    ITaxesSummaryItem,
     toAccessToken,
 } from './client';
 import { getTravelPerkConfig } from './Config';
+import { ForbiddenError, UnauthorizedError } from './http';
 
 export {
     IAuth,
@@ -19,11 +22,15 @@ export {
     IClient,
     IAccessToken,
     IInvoice,
-    IInvoiceLineItem,
+    IInvoiceLine,
+    ITaxesSummaryItem,
     InvoiceStatus,
     createClient,
     getTravelPerkConfig,
     toAccessToken,
+    isAccessTokenExpired,
+    ForbiddenError,
+    UnauthorizedError,
 };
 
 export const createAuth = ({ accountId, returnUrl }: IAuthParams, logger: ILogger): IAuth => {
