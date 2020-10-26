@@ -48,8 +48,5 @@ export interface IInvoicesResponse extends IPaginatedResponse {
 }
 
 export interface IInvoiceLinesResponse extends IPaginatedResponse {
-    total: number;
-    limit: number;
-    offset: number;
     invoice_lines: IInvoiceLine[];
 }
