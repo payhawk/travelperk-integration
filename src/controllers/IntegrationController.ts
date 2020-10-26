@@ -2,6 +2,7 @@ import { boundMethod } from 'autobind-decorator';
 import { Request, Response } from 'restify';
 
 import { Accounts, Connection, Integration } from '@managers';
+import { TravelPerk } from '@services';
 import { ILogger, payhawkSigned, requiredBodyParams } from '@utils';
 
 import { IPayhawkPayload, ISyncInvoicesPayload, PayhawkEvent } from './contracts';
@@ -19,7 +20,7 @@ export class IntegrationController {
     async syncInvoices(req: Request, res: Response) {
         const { fromBeforeMinutes } = req.body as ISyncInvoicesPayload;
 
-        let logger = this.baseLogger.child({ fromBeforeMinutes });
+        const logger = this.baseLogger.child({ fromBeforeMinutes });
         logger.info('Invoices sync received');
 
         const accountsManager = this.accountsManagerFactory(logger);
@@ -28,31 +29,16 @@ export class IntegrationController {
             logger.info('No connected accounts found');
         } else {
             for (const accountId of connectedAccountIds) {
-                logger = logger.child({ accountId });
+                try {
+                    await this.syncInvoicesForAccount(accountId, fromBeforeMinutes, logger);
+                } catch (err) {
+                    if (err instanceof TravelPerk.UnauthorizedError) {
+                        logger.info('Disconnected remotely. Must re-authenticate');
+                        continue;
+                    }
 
-                logger.info('Processing started');
-
-                const connectionManager = this.connectionManagerFactory({ accountId }, logger);
-                const accessToken = await connectionManager.getAccessToken();
-                if (!accessToken) {
-                    logger.error(Error('Could not retrieve valid access token'));
-                    continue;
+                    throw err;
                 }
-
-                const payhawkApiKey = await connectionManager.getPayhawkApiKey();
-
-                const integrationManager = this.integrationManagerFactory(
-                    {
-                        accountId,
-                        payhawkApiKey,
-                        accessToken,
-                    },
-                    logger,
-                );
-
-                await integrationManager.syncInvoices(fromBeforeMinutes);
-
-                logger.info('Processing completed');
             }
         }
 
@@ -102,5 +88,33 @@ export class IntegrationController {
         }
 
         return;
+    }
+
+    private async syncInvoicesForAccount(accountId: string, fromBeforeMinutes: number, logger: ILogger): Promise<void> {
+        const accountLogger = logger.child({ accountId });
+
+        accountLogger.info('Processing started');
+
+        const connectionManager = this.connectionManagerFactory({ accountId }, accountLogger);
+        const accessToken = await connectionManager.getAccessToken();
+        if (!accessToken) {
+            accountLogger.error(Error('Could not retrieve valid access token'));
+            return;
+        }
+
+        const payhawkApiKey = await connectionManager.getPayhawkApiKey();
+
+        const integrationManager = this.integrationManagerFactory(
+            {
+                accountId,
+                payhawkApiKey,
+                accessToken,
+            },
+            accountLogger,
+        );
+
+        await integrationManager.syncInvoices(fromBeforeMinutes);
+
+        logger.info('Processing completed');
     }
 }

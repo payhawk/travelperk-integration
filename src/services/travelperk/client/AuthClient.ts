@@ -89,8 +89,14 @@ export const toAccessToken = (tokenSet: ITokenSet): IAccessToken => {
     return new TokenSet({ ...tokenSet }) as IAccessToken;
 };
 
+export const isAccessTokenExpired = (accessToken: IAccessToken): boolean => {
+    return !Number.isInteger(accessToken.expires_in) || accessToken.expires_in <= MIN_EXPIRATION_TIME;
+};
+
 function buildAuthUrl(path: string, query?: IQuery): string {
     return buildUrl(AUTH_BASE_PATH, path, query);
 }
 
 const AUTH_BASE_PATH = 'https://app.travelperk.com';
+
+const MIN_EXPIRATION_TIME = 60; // seconds

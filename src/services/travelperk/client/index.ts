@@ -10,7 +10,7 @@ import { InvoicesClient } from './InvoicesClient';
 export * from './contracts';
 
 export * from './Client';
-export { toAccessToken } from './AuthClient';
+export { toAccessToken, isAccessTokenExpired } from './AuthClient';
 
 export const createClient: (accessToken: string | undefined, config: ITravelPerkClientConfig, logger: ILogger) => IClient =
     (accessToken: string | undefined, config: ITravelPerkClientConfig, logger: ILogger) => {

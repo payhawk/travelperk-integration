@@ -1,8 +1,8 @@
 import Axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
-import { ForbiddenError } from 'restify-errors';
 
 import { ILogger } from '@utils';
 
+import { ForbiddenError, UnauthorizedError } from './errors';
 import { IHttpClient, IRequestOptions } from './IHttpClient';
 
 export class HttpClient implements IHttpClient {
@@ -74,9 +74,24 @@ export class HttpClient implements IHttpClient {
         if (err.response) {
             const statusCode = err.response.status;
             switch (statusCode) {
+                case 401:
+                    throw createError(
+                        action,
+                        {
+                            name: err.name,
+                            message: err.message,
+                        },
+                        m => new UnauthorizedError(m),
+                    );
                 case 403:
-                    const errBody = { name: err.name, message: err.message };
-                    throw createError(action, errBody, m => new ForbiddenError(m));
+                    throw createError(
+                        action,
+                        {
+                            name: err.name,
+                            message: err.message,
+                        },
+                        m => new ForbiddenError(m),
+                    );
                 case 404:
                     return undefined as any;
                 case 429:

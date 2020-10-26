@@ -80,36 +80,34 @@ export function payhawkSigned(controller: any, requestHandlerName: string, reque
         requestHandlerDescriptor = Object.getOwnPropertyDescriptor(controller, requestHandlerName)!;
     }
 
-    if (process.env.TESTING) {
-        return requestHandlerDescriptor.value;
-    }
-
     const originalMethod: any = requestHandlerDescriptor.value!;
 
     requestHandlerDescriptor.value = async function (this: any, req: Request, response: Response, next: Next) {
-        const timestampString = req.headers['x-payhawk-timestamp'];
-        if (!timestampString || typeof timestampString !== 'string') {
-            throw new ForbiddenError();
+        if (!process.env.TESTING) {
+            const timestampString = req.headers['x-payhawk-timestamp'];
+            if (!timestampString || typeof timestampString !== 'string') {
+                throw new ForbiddenError();
+            }
+
+            const timestamp = new Date(timestampString);
+            if (new Date().getTime() - timestamp.getTime() > REQUEST_DELAY_TOLERANCE_MS) {
+                throw new ForbiddenError();
+            }
+
+            const signature = req.headers['x-payhawk-signature'];
+            if (!signature || typeof signature !== 'string') {
+                throw new ForbiddenError();
+            }
+
+            const publicKeyResponse = await Axios.get<string>(`${config.payhawkUrl}/api/v2/rsa-public-key`);
+            const publicKey = publicKeyResponse.data;
+
+            const rsaKey = new NodeRSA(publicKey);
+            const queryString = req.getQuery();
+            const urlToSign = `${req.path()}${queryString ? `?${queryString}` : ''}`;
+            const dataToSign = `${timestampString}:${urlToSign}:${req.body ? JSON.stringify(req.body) : ''}`;
+            rsaKey.verify(Buffer.from(dataToSign), signature, 'buffer', 'base64');
         }
-
-        const timestamp = new Date(timestampString);
-        if (new Date().getTime() - timestamp.getTime() > REQUEST_DELAY_TOLERANCE_MS) {
-            throw new ForbiddenError();
-        }
-
-        const signature = req.headers['x-payhawk-signature'];
-        if (!signature || typeof signature !== 'string') {
-            throw new ForbiddenError();
-        }
-
-        const publicKeyResponse = await Axios.get<string>(`${config.payhawkUrl}/api/v2/rsa-public-key`);
-        const publicKey = publicKeyResponse.data;
-
-        const rsaKey = new NodeRSA(publicKey);
-        const queryString = req.getQuery();
-        const urlToSign = `${req.path()}${queryString ? `?${queryString}` : ''}`;
-        const dataToSign = `${timestampString}:${urlToSign}:${req.body ? JSON.stringify(req.body) : ''}`;
-        rsaKey.verify(Buffer.from(dataToSign), signature, 'buffer', 'base64');
 
         // eslint-disable-next-line prefer-rest-params
         return originalMethod.apply(this, arguments);

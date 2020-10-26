@@ -6,9 +6,10 @@ import { Next, Request, Response } from 'restify';
 
 import { IConfig } from '@config';
 import { Connection } from '@managers';
+import { TravelPerk } from '@services';
 import { fromBase64, ILogger, requiredQueryParams } from '@utils';
 
-import { IAccount, IConnectionStatus } from './contracts';
+import { ConnectionMessage, IAccount, IConnectionStatus } from './contracts';
 
 export class AuthController {
     constructor(
@@ -123,13 +124,31 @@ export class AuthController {
         const logger = this.baseLogger.child({ accountId }, req);
 
         const connectionManager = this.connectionManagerFactory({ accountId }, logger);
-        const accessToken = await connectionManager.getAccessToken();
+        try {
+            const accessToken = await connectionManager.getAccessToken();
+            const connectionStatus: IConnectionStatus = {
+                isAlive: accessToken !== undefined,
+            };
 
-        const connectionStatus: IConnectionStatus = {
-            isAlive: accessToken !== undefined && !connectionManager.isAccessTokenExpired(accessToken),
-        };
+            res.send(200, connectionStatus);
+        } catch (err) {
+            if (err instanceof TravelPerk.UnauthorizedError) {
+                const result: IConnectionStatus = {
+                    isAlive: false,
+                    message: ConnectionMessage.DisconnectedRemotely,
+                };
 
-        res.send(200, connectionStatus);
+                res.send(200, result);
+            } else {
+                logger.error(err);
+
+                const result: IConnectionStatus = {
+                    isAlive: false,
+                };
+
+                res.send(200, result);
+            }
+        }
     }
 
     private getAccountSelectorHtml(accounts: IAccount[], returnUrl: string, nonce: string) {
