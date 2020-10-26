@@ -2,7 +2,6 @@ import { TravelPerk } from '@services';
 import { IStore } from '@store';
 import { ILogger } from '@utils';
 
-import * as Entities from '../entities';
 import { IManager } from './IManager';
 
 export class Manager implements IManager {
