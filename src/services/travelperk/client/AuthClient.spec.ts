@@ -1,11 +1,11 @@
-import * as TypeMoq from 'typemoq';
+import {Mock, Times} from 'typemoq';
 
 import { ITravelPerkClientConfig } from '../Config';
 import { IHttpClient } from '../http';
 import { AuthClient, isAccessTokenExpired } from './AuthClient';
 
 describe('TravelPerk auth client tests', () => {
-    const httpMock = TypeMoq.Mock.ofType<IHttpClient>();
+    const httpMock = Mock.ofType<IHttpClient>();
     const config: ITravelPerkClientConfig = {
         clientId: 'client_id',
         clientSecret: 'client_secret',
@@ -31,7 +31,8 @@ describe('TravelPerk auth client tests', () => {
                 contentType: 'application/x-www-form-urlencoded',
                 data: `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(config.redirectUri)}&client_id=${config.clientId}&client_secret=${config.clientSecret}`,
             }))
-            .returns(async () => ({}));
+            .returns(async () => ({}))
+            .verifiable(Times.once());
 
         await client.getAccessToken(code);
     });
@@ -46,7 +47,8 @@ describe('TravelPerk auth client tests', () => {
                 contentType: 'application/x-www-form-urlencoded',
                 data: `grant_type=refresh_token&refresh_token=${token.refresh_token}&client_id=${config.clientId}&client_secret=${config.clientSecret}`,
             }))
-            .returns(async () => ({}));
+            .returns(async () => ({}))
+            .verifiable(Times.once());
 
         await client.getAccessToken(token);
     });
@@ -61,7 +63,8 @@ describe('TravelPerk auth client tests', () => {
                 contentType: 'application/x-www-form-urlencoded',
                 data: `token_type_hint=refresh_token&token=${token.refresh_token}&client_id=${config.clientId}&client_secret=${config.clientSecret}`,
             }))
-            .returns(async () => ({}));
+            .returns(async () => ({}))
+            .verifiable(Times.once());
 
         await client.revokeAccessToken(token);
     });

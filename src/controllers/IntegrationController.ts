@@ -3,9 +3,9 @@ import { Request, Response } from 'restify';
 
 import { Accounts, Connection, Integration } from '@managers';
 import { TravelPerk } from '@services';
-import { ILogger, payhawkSigned, requiredBodyParams } from '@utils';
+import { ILogger, payhawkSigned } from '@utils';
 
-import { IPayhawkPayload, ISyncInvoicesPayload, PayhawkEvent } from './contracts';
+import { IPayhawkPayload, PayhawkEvent } from './contracts';
 
 export class IntegrationController {
     constructor(
@@ -16,11 +16,8 @@ export class IntegrationController {
     ) { }
 
     @boundMethod
-    @requiredBodyParams<ISyncInvoicesPayload>('fromBeforeMinutes')
     async syncInvoices(req: Request, res: Response) {
-        const { fromBeforeMinutes } = req.body as ISyncInvoicesPayload;
-
-        let logger = this.baseLogger.child({ fromBeforeMinutes });
+        let logger = this.baseLogger;
         logger.info('Invoices sync received');
 
         const accountsManager = this.accountsManagerFactory(logger);
@@ -32,7 +29,7 @@ export class IntegrationController {
                 try {
                     logger = logger.child({ accountId });
 
-                    await this.syncInvoicesForAccount(accountId, fromBeforeMinutes, logger);
+                    await this.syncInvoicesForAccount(accountId, logger);
                 } catch (err) {
                     if (err instanceof TravelPerk.UnauthorizedError) {
                         logger.info('Disconnected remotely. Must re-authenticate');
@@ -92,7 +89,7 @@ export class IntegrationController {
         return;
     }
 
-    private async syncInvoicesForAccount(accountId: string, fromBeforeMinutes: number, logger: ILogger): Promise<void> {
+    private async syncInvoicesForAccount(accountId: string, logger: ILogger): Promise<void> {
         logger.info('Processing started');
 
         const connectionManager = this.connectionManagerFactory({ accountId }, logger);
@@ -113,7 +110,7 @@ export class IntegrationController {
             logger,
         );
 
-        await integrationManager.syncInvoices(fromBeforeMinutes);
+        await integrationManager.syncInvoices();
 
         logger.info('Processing completed');
     }

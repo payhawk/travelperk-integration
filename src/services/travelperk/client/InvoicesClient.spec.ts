@@ -1,4 +1,4 @@
-import { Mock } from 'typemoq';
+import { Mock, Times } from 'typemoq';
 
 import { IHttpClient } from '../http';
 import { IGetInvoicesFilter, InvoiceStatus } from './contracts';
@@ -20,14 +20,16 @@ describe('TravelPerk invoices client tests', () => {
                 url: `https://api.travelperk.com/invoices?limit=50&offset=0&status=${filter.status}&issuing_date_gte=${encodeURIComponent(filter.issuing_date_gte!)}`,
                 method: 'GET',
             }))
-            .returns(async () => ({ total: 52, invoices: new Array(50).fill({}) }));
+            .returns(async () => ({ total: 52, invoices: new Array(50).fill({}) }))
+            .verifiable(Times.once());
 
         httpMock
             .setup(x => x.request({
                 url: `https://api.travelperk.com/invoices?limit=50&offset=50&status=${filter.status}&issuing_date_gte=${encodeURIComponent(filter.issuing_date_gte!)}`,
                 method: 'GET',
             }))
-            .returns(async () => ({ total: 52, invoices: new Array(2).fill({}) }));
+            .returns(async () => ({ total: 52, invoices: new Array(2).fill({}) }))
+            .verifiable(Times.once());
 
         const result = await client.getInvoices(filter);
         expect(result).toHaveLength(52);
@@ -41,7 +43,8 @@ describe('TravelPerk invoices client tests', () => {
                 url: `https://api.travelperk.com/invoices/lines?limit=50&offset=0&serial_number=${serialNumber}`,
                 method: 'GET',
             }))
-            .returns(async () => ({ total: 2, invoice_lines: new Array(2).fill({}) }));
+            .returns(async () => ({ total: 2, invoice_lines: new Array(2).fill({}) }))
+            .verifiable(Times.once());
 
         const result = await client.getInvoiceLineItems(serialNumber);
         expect(result).toHaveLength(2);
@@ -56,7 +59,8 @@ describe('TravelPerk invoices client tests', () => {
                 method: 'GET',
                 responseType: 'arraybuffer',
             }))
-            .returns(async () => new ArrayBuffer(0));
+            .returns(async () => new ArrayBuffer(0))
+            .verifiable(Times.once());
 
         await client.getInvoiceLineItems(serialNumber);
     });
