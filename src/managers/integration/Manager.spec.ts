@@ -66,6 +66,10 @@ describe('Integration manager', () => {
             .returns(async () => [])
             .verifiable(Times.once());
 
+        entitiesManagerMock
+            .setup(e => e.updateLastInvoicesSync(newSyncedAt))
+            .verifiable(Times.once());
+
         await manager.syncInvoices();
     });
 });
