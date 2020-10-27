@@ -1,7 +1,5 @@
-import moment = require('moment');
-
 import { Payhawk } from '@services';
-import { ILogger } from '@utils';
+import { IDateProvider, ILogger } from '@utils';
 
 import * as Entities from '../entities';
 import { IManager } from './IManager';
@@ -10,16 +8,15 @@ export class Manager implements IManager {
     constructor(
         private readonly payhawkClient: Payhawk.IClient,
         private readonly travelperkEntities: Entities.IManager,
+        private readonly dateProvider: IDateProvider,
         private readonly logger: ILogger,
     ) { }
 
-    async syncInvoices(fromBeforeMinutes: number): Promise<void> {
+    async syncInvoices(): Promise<void> {
         const lastSyncedAt = await this.travelperkEntities.getLastInvoicesSync();
-        const after = lastSyncedAt ? moment.utc().subtract(fromBeforeMinutes, 'minutes').toDate() : undefined;
+        const invoices = await this.travelperkEntities.getPaidInvoices(lastSyncedAt);
 
-        const invoices = await this.travelperkEntities.getPaidInvoices(after);
-
-        const newSyncedAt = moment.utc().toDate();
+        const newSyncedAt = this.dateProvider.utcNow();
 
         for (const invoice of invoices) {
             const invoiceLogger = this.logger.child({ invoiceSerialNumber: invoice.serialNumber });

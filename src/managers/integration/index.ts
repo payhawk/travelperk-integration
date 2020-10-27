@@ -1,5 +1,5 @@
 import { Payhawk, TravelPerk } from '@services';
-import { ILogger } from '@utils';
+import { createDateProvider, ILogger } from '@utils';
 
 import { createStore } from '../../store';
 import * as Entities from '../entities';
@@ -24,6 +24,7 @@ export const createManager: IManagerFactory = ({ accessToken, accountId, payhawk
     return new Manager(
         payhawkClient,
         entities,
+        createDateProvider(),
         logger,
     );
 };
