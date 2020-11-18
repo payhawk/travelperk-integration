@@ -24,7 +24,12 @@ export class HttpClient implements IHttpClient {
     }
 
     async request<TBody = any>(requestOptions: IRequestOptions): Promise<TBody> {
-        return this.makeRequest<TBody>(requestOptions);
+        const logger = this.logger.child({ url: requestOptions.url });
+        logger.info('Making a request');
+        const result = this.makeRequest<TBody>(requestOptions);
+        logger.info('Done with the request.');
+
+        return result;
     }
     private async makeRequest<TBody extends any>({ method, url, data, contentType, responseType }: IRequestOptions): Promise<TBody> {
         return this._makeSafeRequest<TBody>(
@@ -69,14 +74,14 @@ export class HttpClient implements IHttpClient {
     }
 
     private async _handleFailedRequest<TResult>(err: AxiosError, action: () => Promise<any>, retryCount: number): Promise<TResult> {
-        const logger = this.logger.child({ action: action.toString() });
+        const logger = this.logger.child({ action: action.toString(), retryCount });
 
         if (err.response) {
             const statusCode = err.response.status;
             switch (statusCode) {
                 case 401:
                     throw createError(
-                        action,
+                        logger,
                         {
                             name: err.name,
                             message: err.message,
@@ -85,7 +90,7 @@ export class HttpClient implements IHttpClient {
                     );
                 case 403:
                     throw createError(
-                        action,
+                        logger,
                         {
                             name: err.name,
                             message: err.message,
@@ -117,16 +122,18 @@ export class HttpClient implements IHttpClient {
                     });
                 case 400:
                 default:
-                    throw createError(action, err);
+                    throw createError(logger, err);
             }
         }
 
-        throw createError(action, err);
+        throw createError(logger, err);
     }
 }
 
-function createError(action: any, err: any, errorConstructor: (m?: string) => Error = Error): Error {
-    return errorConstructor(JSON.stringify({ action: action.toString(), error: err }, undefined, 2));
+function createError(logger: ILogger, err: Error, errorConstructor: (m?: string) => Error = Error): Error {
+    const result = errorConstructor(err.message);
+    logger.error(result, { innerError: err });
+    return result;
 }
 
 const AUTHORIZATION_HEADER = 'Authorization';
