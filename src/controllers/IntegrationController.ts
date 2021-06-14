@@ -17,33 +17,34 @@ export class IntegrationController {
 
     @boundMethod
     async syncInvoices(req: Request, res: Response) {
-        let logger = this.baseLogger;
-        logger.info('Invoices sync received');
+        let accountLogger = this.baseLogger;
+        accountLogger.info('Invoices sync received');
 
-        const accountsManager = this.accountsManagerFactory(logger);
+        const accountsManager = this.accountsManagerFactory(accountLogger);
         const connectedAccountIds = await accountsManager.getConnectedAccountIds();
         if (connectedAccountIds.length === 0) {
-            logger.info('No connected accounts found');
+            accountLogger.info('No connected accounts found');
         } else {
             for (const accountId of connectedAccountIds) {
                 try {
-                    logger = logger.child({ accountId });
+                    accountLogger = accountLogger.child({ accountId });
 
-                    await this.syncInvoicesForAccount(accountId, logger);
+                    await this.syncInvoicesForAccount(accountId, accountLogger);
                 } catch (err) {
                     if (err instanceof TravelPerk.UnauthorizedError) {
-                        logger.info('Disconnected remotely. Must re-authenticate');
-                        continue;
+                        accountLogger.info('Disconnected remotely. Must re-authenticate');
+                    } else {
+                        accountLogger.error(err);
                     }
 
-                    throw err;
+                    continue;
                 }
             }
         }
 
         res.send(204);
 
-        logger.info('Invoices sync processed');
+        accountLogger.info('Invoices sync processed');
     }
 
     @boundMethod
@@ -89,13 +90,13 @@ export class IntegrationController {
         return;
     }
 
-    private async syncInvoicesForAccount(accountId: string, logger: ILogger): Promise<void> {
-        logger.info('Processing started');
+    private async syncInvoicesForAccount(accountId: string, accountLogger: ILogger): Promise<void> {
+        accountLogger.info('Processing started');
 
-        const connectionManager = this.connectionManagerFactory({ accountId }, logger);
+        const connectionManager = this.connectionManagerFactory({ accountId }, accountLogger);
         const accessToken = await connectionManager.getAccessToken();
         if (!accessToken) {
-            logger.error(Error('Could not retrieve valid access token'));
+            accountLogger.error(Error('Could not retrieve valid access token'));
             return;
         }
 
@@ -107,11 +108,11 @@ export class IntegrationController {
                 payhawkApiKey,
                 accessToken,
             },
-            logger,
+            accountLogger,
         );
 
         await integrationManager.syncInvoices();
 
-        logger.info('Processing completed');
+        accountLogger.info('Processing completed');
     }
 }
