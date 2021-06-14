@@ -56,7 +56,7 @@ export class Manager implements IManager {
     async getPayhawkApiKey(): Promise<string> {
         const result = await this.store.getApiKey(this.accountId);
         if (!result) {
-            throw Error('No API key for account');
+            throw this.logger.error(Error('No API key for account'));
         }
 
         return result;
